@@ -88,6 +88,123 @@ void main(void) {
   wispData.epcBuf[10] = *((uint8_t*)INFO_WISP_TAGID+1); // WISP ID MSB: Pull from INFO seg
   wispData.epcBuf[11] = *((uint8_t*)INFO_WISP_TAGID); // WISP ID LSB: Pull from INFO seg
   
+
+  FRAM_init();
+
+
+
+  if( 1 ){
+        FRAM_write((uint16_t* )(0x1800), 0);
+        FRAM_write((uint16_t* )(0x1804), 0);
+        FRAM_write((uint16_t* )(0x1808), 0x180c);
+        FRAM_write((uint16_t* )(0x180c), 0);
+        FRAM_write((uint16_t* )(0x1810), 0);
+        FRAM_write((uint16_t* )(0x1814), 0);
+        FRAM_write((uint16_t* )(0x1818), 0);
+        FRAM_write((uint16_t* )(0x181c), 0);
+        FRAM_write((uint16_t* )(0x1820), 0);
+        FRAM_write((uint16_t* )(0x1824), 0);
+        FRAM_write((uint16_t* )(0x1828), 0);
+        FRAM_write((uint16_t* )(0x182c), 0);
+        FRAM_write((uint16_t* )(0x1830), 0);
+        FRAM_write((uint16_t* )(0x1834), 0);
+        FRAM_write((uint16_t* )(0x1838), 0);
+        FRAM_write((uint16_t* )(0x183c), 0);
+        FRAM_write((uint16_t* )(0x1840), 0);
+        FRAM_write((uint16_t* )(0x1844), 0);
+        FRAM_write((uint16_t* )(0x1848), 0);
+        FRAM_write((uint16_t* )(0x184c), 0);
+        FRAM_write((uint16_t* )(0x1850), 0);
+        FRAM_write((uint16_t* )(0x1854), 0);
+        FRAM_write((uint16_t* )(0x1858), 0);
+        FRAM_write((uint16_t* )(0x185c), 0);
+        FRAM_write((uint16_t* )(0x1860), 0);
+        FRAM_write((uint16_t* )(0x1864), 0);
+        FRAM_write((uint16_t* )(0x1868), 0);
+        FRAM_write((uint16_t* )(0x186c), 0);
+        FRAM_write((uint16_t* )(0x1870), 0);
+        FRAM_write((uint16_t* )(0x1874), 0);
+        FRAM_write((uint16_t* )(0x1878), 0);
+        FRAM_write((uint16_t* )(0x187c), 0);
+
+
+        FRAM_write((uint16_t* )(0x1880), 0);
+        FRAM_write((uint16_t* )(0x1884), 0);
+        FRAM_write((uint16_t* )(0x1888), 0);
+        FRAM_write((uint16_t* )(0x188c), 0);
+        FRAM_write((uint16_t* )(0x1890), 0);
+        FRAM_write((uint16_t* )(0x1894), 0);
+        FRAM_write((uint16_t* )(0x1898), 0);
+        FRAM_write((uint16_t* )(0x189c), 0);
+        FRAM_write((uint16_t* )(0x18a0), 0);
+        FRAM_write((uint16_t* )(0x18a4), 0);
+        FRAM_write((uint16_t* )(0x18a8), 0);
+        FRAM_write((uint16_t* )(0x18ac), 0);
+        FRAM_write((uint16_t* )(0x18b0), 0);
+        FRAM_write((uint16_t* )(0x18b4), 0);
+        FRAM_write((uint16_t* )(0x18b8), 0);
+        FRAM_write((uint16_t* )(0x18bc), 0);
+        FRAM_write((uint16_t* )(0x18c0), 0);
+        FRAM_write((uint16_t* )(0x18c4), 0);
+        FRAM_write((uint16_t* )(0x18c8), 0);
+        FRAM_write((uint16_t* )(0x18cc), 0);
+        FRAM_write((uint16_t* )(0x18d0), 0);
+        FRAM_write((uint16_t* )(0x18d4), 0);
+        FRAM_write((uint16_t* )(0x18d8), 0);
+        FRAM_write((uint16_t* )(0x18dc), 0);
+        FRAM_write((uint16_t* )(0x18e0), 0);
+        FRAM_write((uint16_t* )(0x18e4), 0);
+        FRAM_write((uint16_t* )(0x18e8), 0);
+        FRAM_write((uint16_t* )(0x18ec), 0);
+        FRAM_write((uint16_t* )(0x18f0), 0);
+        FRAM_write((uint16_t* )(0x18f4), 0);
+        FRAM_write((uint16_t* )(0x18f8), 0);
+        FRAM_write((uint16_t* )(0x18fc), 0);
+
+        FRAM_write((uint16_t* )(0x1900), 0);
+        FRAM_write((uint16_t* )(0x1904), 0);
+        FRAM_write((uint16_t* )(0x1908), 0);
+        FRAM_write((uint16_t* )(0x190c), 0);
+        FRAM_write((uint16_t* )(0x1910), 0);
+        FRAM_write((uint16_t* )(0x1914), 0);
+        FRAM_write((uint16_t* )(0x1918), 0);
+        FRAM_write((uint16_t* )(0x191c), 0);
+        FRAM_write((uint16_t* )(0x1920), 0);
+        FRAM_write((uint16_t* )(0x1924), 0);
+        FRAM_write((uint16_t* )(0x1928), 0);
+        FRAM_write((uint16_t* )(0x192c), 0);
+        FRAM_write((uint16_t* )(0x1930), 0);
+        FRAM_write((uint16_t* )(0x1934), 0);
+        FRAM_write((uint16_t* )(0x1938), 0);
+        FRAM_write((uint16_t* )(0x193c), 0);
+        FRAM_write((uint16_t* )(0x1940), 0);
+        FRAM_write((uint16_t* )(0x1944), 0);
+        FRAM_write((uint16_t* )(0x1948), 0);
+        FRAM_write((uint16_t* )(0x194c), 0);
+        FRAM_write((uint16_t* )(0x1950), 0);
+        FRAM_write((uint16_t* )(0x1954), 0);
+        FRAM_write((uint16_t* )(0x1958), 0);
+        FRAM_write((uint16_t* )(0x195c), 0);
+        FRAM_write((uint16_t* )(0x1960), 0);
+        FRAM_write((uint16_t* )(0x1964), 0);
+        FRAM_write((uint16_t* )(0x1968), 0);
+        FRAM_write((uint16_t* )(0x196c), 0);
+        FRAM_write((uint16_t* )(0x1970), 0);
+        FRAM_write((uint16_t* )(0x1974), 0);
+        FRAM_write((uint16_t* )(0x1978), 0);
+        FRAM_write((uint16_t* )(0x197c), 0);
+  }
+
+
+
+
+
+
+
+
+
+
+
   // Talk to the RFID reader.
   while (FOREVER) {
     WISP_doRFID();
