@@ -60,7 +60,7 @@
 #define TX_TIMING_ACK   (20)/*60.0us*/  //(14,58.6us)
 
 #define TX_TIMING_QR    (52)//58.8us
-#define TX_TIMING_QA    (48)//60.0us
+#define TX_TIMING_QA    (48)//60.0us**
 #define TX_TIMING_REQRN (33)//60.4us
 #define TX_TIMING_READ  (29)//58.0us
 #define TX_TIMING_WRITE (31)//60.4us

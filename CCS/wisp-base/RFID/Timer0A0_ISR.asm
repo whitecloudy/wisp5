@@ -41,14 +41,10 @@ Timer0A0_ISR:                                                ;[6]
 	
 
 
-	MOV		&(0x1808), R_scratch0
-	MOV		R_newCt, 0(R_scratch0)
-	ADD		#(4), &(0x1808)
+	;MOV		&(0x1808), R_scratch0
+	;MOV		R_newCt, 0(R_scratch0)
+	;ADD		#(2), &(0x1808)
 
-
-	;RLA		R_bitCt
-	;MOV		R_newCt, 0x1900(R_bitCt)
-	;RRA		R_bitCt
 
 	; Check how many bits we have received.
 	CMP     #(2), R_bits                                     ;[2]

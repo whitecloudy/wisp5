@@ -241,7 +241,9 @@ doneShifting:
 
 rspWithQuery:
 	;Delay is a bit tricky because of stupid Q. Q adds 8*Q cycles to the timing. So we need to subtract that (grr...)
-	MOV		#TX_TIMING_QUERY,  R5	;[]
+	;MOV		#TX_TIMING_QUERY,  R5	;[]
+	;TX_TIMING_QUERY를 바꿨는데도 간격이 안바껴서 이걸로 함. 여기서 clock 스피드는 RX_clock, 1증가할때마다 0.25us 증가
+	MOV		#128,  R5	;[] default = 24, add = 104(26us), result = 128
 
 queryTimingLoop:
 	NOP								;[1]
