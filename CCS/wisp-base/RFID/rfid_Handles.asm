@@ -235,9 +235,13 @@ doneShifting:
 
 	;is it our turn? (recall, slotCount is still in Rs0)
 	CMP #(1), R_scratch0			;[2] is SlotCt>=1? Info stored in C: ( C = (SlotCt>=1) )
-	JNC	rspWithQuery				;[2] respond with a query if !C
+	;JNC	rspWithQuery				;[2] respond with a query if !C
 
-	RETA								;[5] not our turn; return from call
+	;RETA								;[5] not our turn; return from call
+
+	;슬롯 카운트를 제외하고 일단 R420의 응답을 확인하기 위해 RETA를 주석처리하여 제거
+	NOP
+	NOP
 
 rspWithQuery:
 	;Delay is a bit tricky because of stupid Q. Q adds 8*Q cycles to the timing. So we need to subtract that (grr...)
