@@ -329,7 +329,11 @@ ackWaits:
 	;keepDoingHandleACK if it is passed RN16	check
 keepDoHandleACK:	
 	;Delay for 10us(28.5cycles) so we can hit the 57.0us mark (remember, we're at 2.85MHz now)
-	MOV		#TX_TIMING_ACK, R5		;[2]
+	;MOV		#TX_TIMING_ACK, R5		;[2]
+	;기존의 TX_TIMING_ACK는 14us딜레이 되었음. 440kHz에서는 약 50us를 딜레이시켜야함 따라서(RX clock 사용중)
+	;따라서 36us를 더 딜레이해야됨, 1이 커질때마다 5클락이 증가하여 딜레이는 0.3125us 증가
+	;그러므로 현 20보다 115증가한 135을 입력
+	MOV		#135,	R5	;default = 20, add = 138(43.125us), result = 158
 
 ackTimingLoop:
 	NOP								;[1]
