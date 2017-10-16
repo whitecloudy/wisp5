@@ -300,14 +300,13 @@ void main(void) {
   }
 
 
-
-
-
-
-
-
-
-
+  if(1)
+  {
+      FRAM_write((uint16_t* )(0x180a), 0);
+      FRAM_write((uint16_t* )(0x180c), 0);
+      FRAM_write((uint16_t* )(0x180e), 0);
+      FRAM_write((uint16_t* )(0x1810), 0);
+  }
 
   // Talk to the RFID reader.
   while (FOREVER) {
