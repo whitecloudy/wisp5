@@ -175,6 +175,12 @@ extern void handleRead      (void);
 extern void handleWrite     (void);
 extern void handleBlockWrite(void);
 
+//실험용 상수 셋들
+#define USER_QUERY_RECEIVED 0x180a
+#define USER_RN16_SENT      0x180c
+#define USER_ACK_RECEIVED   0x180e
+#define USER_EPC_SENT       0x1810
+
 //MACROS----------------------------------------------------------------------------------------------------------------------------//
 #define BITSET(port,pin)    port |= (pin)
 #define BITCLR(port,pin)    port &= ~(pin)

@@ -200,9 +200,9 @@ handleQuery:
 	;Exit: Q and TRext have been parsed. no registers are held.
 
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	; testing 정확히 WISP이 쿼리문을 인식하였을때 1회 증가
+	; 정확히 WISP이 쿼리문을 인식하였을때 1회 증가
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-	INC		&0x180a
+	INC		&USER_QUERY_RECEIVED
 
 	;*********************************************************************************************************************************
 	; STEP 2: Generate New Slot Count
@@ -273,6 +273,10 @@ queryTimingLoop:
 	MOV.B	rfid.TRext,		R15		;[3] load TRext
 	CALLA	#TxFM0					;[5] call the routine
 
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; 정확히 WISP이 RN16을 보낸 후 인식하였을때 1회 증가
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	INC		&USER_RN16_SENT
 
 	;Restore faster Rx Clock
 	;MOV		&(INFO_ADDR_RXUCS0), &UCSCTL0 ;[] switch to corr Rx Frequency
@@ -305,6 +309,10 @@ ackWaits:
 	CMP		#NUM_ACK_BITS, R_bits	;[1] Is R_bits>=18? Info stored in C: ( C = (R_bits>=18) )
 	JNC		ackWaits				;[2] Loop until C pops up.
 
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; WISP이 ACK를 받았을때 1회 증가
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	INC		&USER_ACK_RECEIVED
 
 	;STEP2: Wakeup and Parse--------------------------------------------------------------------------------------------------------//
 	BIC		#(GIE), SR				;[1] don't need anymore bits, so turn off Rx_SM
@@ -341,6 +349,8 @@ keepDoHandleACK:
 	;그러므로 현 20보다 115증가한 135을 입력
 	MOV		#135,	R5	;default = 20, add = 138(43.125us), result = 158
 
+
+
 ackTimingLoop:
 	NOP								;[1]
 	NOP								;[1]
@@ -357,6 +367,11 @@ ackTimingLoop:
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;NO HIT
 
 	CALLA	#TxFM0					;[5] call transmit routine
+
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	; 정확히 WISP이 ACK를 받았을때 1회 증가
+	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+	INC		&USER_EPC_SENT
 
 	;Restore faster Rx Clock
 	;/** @todo Should we do this now, or at the top of keepDoingRFID? */
