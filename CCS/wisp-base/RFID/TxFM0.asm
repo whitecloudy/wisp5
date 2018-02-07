@@ -142,34 +142,46 @@ V1_Send_A_Pilot_Tone:
 V1_Send_Preamble:
     MOV.B   R_scratch1, &PTXOUT		;[4] HIGH on PTXOUT.PIN_TX       /*HH*/
     NOPx5							;[5] 5 timing cycles
+    NOPx2
     MOV.B   R_scratch1, &PTXOUT		;[4] HIGH on PTXOUT.PIN_TX
     ;* Timing Optimization Shoved Here(5 free cycles)*/
     MOV.B   #0x00, R_scratch0		;[1] just in case the pilot tones were skipped (where scratch0 was loaded)
     NOPx4							;[4] 4 timing cycles
     ;*End of 5 free cycles*/
+    NOPx2
     MOV.B   R_scratch0, &PTXOUT		;[4] HIGH on PTXOUT.PIN_TX       /*LH*/
     NOPx5							;[5] 5 timing cycles
+    NOPx2
     MOV.B   R_scratch1, &PTXOUT		;[4] HIGH on PTXOUT.PIN_TX
     NOPx5							;[5] 5 timing cycles
+    NOPx2
     MOV.B   R_scratch0, &PTXOUT		;[4] HIGH on PTXOUT.PIN_TX       /*LL*/
     NOPx5							;[5] 5 timing cycles
+    NOPx2
     MOV.B   R_scratch0, &PTXOUT		;[4] HIGH on PTXOUT.PIN_TX
     NOPx5							;[5] 5 timing cycles
+    NOPx2
     MOV.B   R_scratch1, &PTXOUT		;[4] HIGH on PTXOUT.PIN_TX       /*HL*/
     NOPx5							;[5] 5 timing cycles
+    NOPx2
     MOV.B   R_scratch0, &PTXOUT		;[4] HIGH on PTXOUT.PIN_TX
     NOPx5							;[5] 5 timing cycles
+    NOPx2
     MOV.B   R_scratch0, &PTXOUT		;[4] HIGH on PTXOUT.PIN_TX       /*LL*/
     NOPx5							;[5] 5 timing cycles
+    NOPx2
     MOV.B   R_scratch0, &PTXOUT		;[4] HIGH on PTXOUT.PIN_TX
     NOPx5							;[5] 5 timing cycles
+    NOPx2
     MOV.B   R_scratch1, &PTXOUT		;[4] HIGH on PTXOUT.PIN_TX       /*HH*/
     NOPx5							;[5] 5 timing cycles
+    NOPx2
     MOV.B   R_scratch1, &PTXOUT		;[4] HIGH on PTXOUT.PIN_TX
     MOV.B   #0xFF, R_prevState		;[1] load up prevStateLogic to HIGH (cause preamble left it that way)
     ;* Timing Optimization Shoved Here (1 Free Cycle)*/
     MOV     R_prevState, R_scratch0	;[1] load prevStateLogic into scratch0 for calc (optimized line for b0 of transmit below).
     ;* End of 1 free cycle */
+    NOPx2
     
 ;/************************************************************************************************************************************
 ;/													SEND A DATA BYTE (UNROLLED)                    							         *
@@ -187,9 +199,11 @@ V1_Send_a_Byte:
     MOV.B   R_scratch0, &PTXOUT		;[4] push bit out on PTXOUT.PIN_TX
     XOR     R_currByte, R_prevState	;[1] secondFM0Bit = currDataBit^prevLogicState (STATE1|STATE2) from EPC Spec Table). This also
     NOPx4							;[4] 4 timing cycles
+    NOPx2
     MOV.B   R_prevState, &PTXOUT	;[4] push bit out on PTXOUT.PIN_TX                          //happens to be the new value of prevLogicState
     RLA     R_currByte				;[1] load next bit into hot seat                   //, which this line does too.
     NOPx2							;[2] 2 timing cycles
+    NOPx2
             
     ;/(b1)Second Bit------------------------------------------------------------------------------------------------------------------
     MOV     R_prevState, R_scratch0	;[1] any lines beyond here that I don't comment are just standard FM0 calc&shoveOut lines
@@ -197,9 +211,11 @@ V1_Send_a_Byte:
     MOV.B   R_scratch0, &PTXOUT		;[4]
     XOR     R_currByte, R_prevState	;[1]
     NOPx4							;[4]
+    NOPx2
     MOV.B   R_prevState, &PTXOUT	;[4]
     RLA     R_currByte				;[1]
     NOPx2							;[2]
+    NOPx2
             
     ;/(b2)Third Bit-------------------------------------------------------------------------------------------------------------------
     MOV     R_prevState, R_scratch0	;[1]
@@ -207,9 +223,11 @@ V1_Send_a_Byte:
     MOV.B   R_scratch0, &PTXOUT		;[4]
     XOR     R_currByte, R_prevState	;[1]
     NOPx4							;[4]
+    NOPx2
     MOV.B   R_prevState, &PTXOUT	;[4]
     RLA     R_currByte				;[1]
     NOPx2							;[2]
+    NOPx2
 
     ;/(b3)Fourth Bit------------------------------------------------------------------------------------------------------------------
     MOV     R_prevState, R_scratch0	;[1]
@@ -217,9 +235,11 @@ V1_Send_a_Byte:
     MOV.B   R_scratch0, &PTXOUT		;[4]
     XOR     R_currByte, R_prevState	;[1]
     NOPx4							;[4]
+    NOPx2
     MOV.B   R_prevState, &PTXOUT	;[4]
     RLA     R_currByte				;[1]
     NOPx2							;[2]
+    NOPx2
             
     ;/(b4)Fifth Bit-------------------------------------------------------------------------------------------------------------------
     MOV     R_prevState, R_scratch0	;[1]
@@ -227,9 +247,11 @@ V1_Send_a_Byte:
     MOV.B   R_scratch0, &PTXOUT		;[4]
     XOR     R_currByte, R_prevState	;[1]
     NOPx4							;[4]
+    NOPx2
     MOV.B   R_prevState, &PTXOUT	;[4]
     RLA     R_currByte				;[1]
     NOPx2							;[2]
+    NOPx2
 
     ;/(b5)Sixth Bit------------------------------------------------------------------------------------------------------------------
     MOV     R_prevState, R_scratch0	;[1]
@@ -237,9 +259,11 @@ V1_Send_a_Byte:
     MOV.B   R_scratch0, &PTXOUT		;[4]
     XOR     R_currByte, R_prevState	;[1]
     NOPx4							;[4]
+    NOPx2
     MOV.B   R_prevState, &PTXOUT	;[4]
     RLA     R_currByte				;[1]
     NOPx2							;[2]
+    NOPx2
             
     ;/(b6)Seventh Bit-------------------------------------------------------------------------------------------------------------------
     MOV     R_prevState, R_scratch0	;[1]
@@ -247,9 +271,11 @@ V1_Send_a_Byte:
     MOV.B   R_scratch0, &PTXOUT		;[4]
     XOR     R_currByte, R_prevState	;[1]
     NOPx4							;[4]
+    NOPx2
     MOV.B   R_prevState, &PTXOUT	;[4]
     RLA     R_currByte				;[1]
     NOPx2							;[2]
+    NOPx2
 
     ;/(b7)Eighth Bit------------------------------------------------------------------------------------------------------------------
     MOV     R_prevState, R_scratch0	;[1]
@@ -262,9 +288,11 @@ V1_Send_a_Byte:
     TST.B   R_byteCt				;[1] test if there are bytes left to send
     MOV     R_prevState, R_scratch0	;[1] load prevStateLogic into scratch0 for calc (optimized line for b0 of next byte)
     NOP								;[1] 1 timing cycle
+    NOPx2
     ;*End of 4 free cycles*/
     MOV.B   R_prevState, &PTXOUT	;[4] *don't worry, MOV doesn't affect Z
-    
+    NOPx2
+
     JNZ     V1_Load_Data			;[2] if (byteCt!=0) Continue Sending Bytes
 
     ;/Send the Last Bit (EoS Bit)-----------------------------------------------------------------------------------------------------
@@ -275,7 +303,7 @@ V1_Send_EoS_Byte:
     MOV.B   R_scratch0, &PTXOUT		;[4] push it out on 2.0
     ;*Timing Optimization Shoved Here(14 free cycles). Note that the 14 cycles are used to enforce EoS bit timing (18cycles total)*/
     ;BIS.B   #PIN_RX_EN, &PRXEOUT	;[4] Leave with Port Low except for RX_EN.
-
+    NOPx2
 	POPM.A #5, R10					;[?] Restore preserved registers R6-R10 /** @todo Find out how long this takes */
 
 	;POP     R_scratch2				;[2] return the preserved registers
@@ -624,4 +652,3 @@ V2_Send_EoS_Byte:
     
     
     
-  
