@@ -48,10 +48,10 @@
 #define RESET_BITS_VAL  (-2)        /* this is the value which will reset the TA1_SM if found in 'bits (R5)' by rfid_sm         */
 
 // RFID TIMINGS (Taken a bit more liberately to support both R420 and R1000).
-#define RTCAL_MIN                       (667)           // strictly calculated it should be 2.5*TARI = 2.5*16.67 us = 41.675 us = 667 cycles
-#define RTCAL_MAX                       (800)           // 3*TARI = 3*16.67 = 50.01 us = 800 cycles
-#define TRCAL_MIN                       (734)           // We don't have time to do a MUL instruction, so we do 1.1*RTCAL_MIN instead of 1.1*RTCAL.
-#define TRCAL_MAX                       (2400)           // We don't have time to do a MUL instruction, so we do 3*RTCAL_MAX instead of 3*RTCAL.
+#define RTCAL_MIN                       (800)           // strictly calculated it should be 2.5*TARI = 2.5*16.67 us = 41.675 us = 667 cycles
+#define RTCAL_MAX                       (1300)           // 3*TARI = 3*16.67 = 50.01 us = 800 cycles
+#define TRCAL_MIN                       (880)           // We don't have time to do a MUL instruction, so we do 1.1*RTCAL_MIN instead of 1.1*RTCAL.
+#define TRCAL_MAX                       (4000)           // We don't have time to do a MUL instruction, so we do 3*RTCAL_MAX instead of 3*RTCAL.
 
 //TIMING----------------------------------------------------------------------------------------------------------------------------//
 #define TX_TIMING_QUERY (128)//50us
