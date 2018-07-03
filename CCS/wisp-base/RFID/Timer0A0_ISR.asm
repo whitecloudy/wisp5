@@ -60,7 +60,6 @@ ModeA_process:
 	JL      failed_RTCal                                     ;[2] RTCAL  too small
 	CMP     #RTCAL_MAX, R_newCt                              ;[2] RTCAL <= 3*TARI - PW?
 	JGE     failed_RTCal                                     ;[2] RTCAL too large
-	MOV		R_newCt,	&(0x1800)
 	
 	;RTCAL is correct length, now proceed to compute pivot.
 	MOV     R_newCt, R_scratch2                              ;[1] Save RTCAL to compare with TRCAL later on.
@@ -95,7 +94,6 @@ ModeB_TRCal:
 	CMP     #TRCAL_MAX,  R_newCt                             ;[2] TRCAL <= 3 RTCAL_ESTIMATE?
 	JGE     failed_TRCal                                     ;[2] TRCAL too large
 	
-	MOV		R_newCt,	&(0x1804)
 	CLR     R_bitCt                                          ;[1] Since we received full preamble, clear current command bit received count.
 	RETI                                                     ;[5] Return
 
@@ -154,6 +152,7 @@ ModeD_setupNewByte:
 ;*************************************************************************************************************************************
 failed_RTCal:
 failed_TRCal:
+	;INC 	&(0x1804)			;for checking how many fails
    	CLR		&TA0CTL				;[] Disable TimerA before exiting the ISR after a fail observed to allow going to lpm4.
 	CLR     R_bits                                           ;[1] reset R5 for rentry into RX State Machine
 	CLR     R_bitCt                                          ;[]

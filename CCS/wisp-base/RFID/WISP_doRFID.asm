@@ -208,6 +208,7 @@ callSelectHandler:
 	JMP		endDoRFID
 
 callQueryHandler:
+	;INC		&(0x1806)		;for checking how many query has been called
 	CALLA	#handleQuery
 	JMP		endDoRFID
 

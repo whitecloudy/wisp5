@@ -170,8 +170,11 @@ handleQuery:
 
 	JLO		handleQuery				;[2] Loop until C pops up.
 
+
+
 	;RETA
 
+abcde:
 	;STEP2: Wakeup and Parse--------------------------------------------------------------------------------------------------------//
 	BIC		#(GIE), SR				;[1] don't need anymore bits, so turn off Rx_SM
 	NOP
