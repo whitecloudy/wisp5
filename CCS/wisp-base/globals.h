@@ -54,7 +54,7 @@
 #define TRCAL_MAX                       (4000)           // We don't have time to do a MUL instruction, so we do 3*RTCAL_MAX instead of 3*RTCAL.
 
 //TIMING----------------------------------------------------------------------------------------------------------------------------//
-#define TX_TIMING_QUERY (128)//50us
+#define TX_TIMING_QUERY (600)//50us
 #define TX_TIMING_ACK   (135)//50us
 
 #define TX_TIMING_QR    (269)//83.34us
@@ -127,6 +127,7 @@ typedef struct {
     void*       *wrHook;                    /* this function is called with no params or return after a write command response  */
     void*       *bwrHook;                   /* this function is called with no params or return after a write command response  */
     void*       *rdHook;                    /* this function is called with no params or return after a read command response   */
+    void*		*quHook;
 
     //Memory Map Bank Ptrs
     uint8_t*    RESBankPtr;                 /* for read command, this is a pointer to the virtual, mapped Reserved Bank         */

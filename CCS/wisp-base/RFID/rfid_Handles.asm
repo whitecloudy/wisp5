@@ -170,11 +170,8 @@ handleQuery:
 
 	JLO		handleQuery				;[2] Loop until C pops up.
 
-
-
 	;RETA
 
-abcde:
 	;STEP2: Wakeup and Parse--------------------------------------------------------------------------------------------------------//
 	BIC		#(GIE), SR				;[1] don't need anymore bits, so turn off Rx_SM
 	NOP
@@ -263,6 +260,44 @@ queryTimingLoop:
 	SWPB	R_scratch0				;[1] swap bytes so we can shove full word out in one call (MSByte into dataBuf[0],...)
 	MOV		R_scratch0, 	&(rfidBuf) ;[4] load the MSByte
 
+
+	CLR 	R_scratch0
+	CLR 	R_scratch1
+	;MOV.B	(cmd), R_scratch0
+	MOV.B	(cmd+1), R_scratch0
+	MOV.B   (cmd+1), &(rfidBuf)
+
+	RRA.B	&(rfidBuf)
+	RRA.B	&(rfidBuf)
+	AND.B	#0x3f, &(rfidBuf)
+
+	RLA		R_scratch0				;[1]
+	RLA		R_scratch0				;[1]
+	RLA		R_scratch0				;[1]
+	RLA		R_scratch0				;[1]
+	RLA		R_scratch0				;[1]
+	RLA		R_scratch0				;[1]
+	;RLA		R_scratch0				;[1]
+	;RLA		R_scratch0				;[1]
+
+	RLC.B	&(cmd+1)
+	RLC.B	&(cmd+1)
+	RLC.B	&(cmd+1)
+	RLC.B	&(cmd+1)
+	RLC.B	&(cmd+1)
+	RLC.B	&(cmd+1)
+	AND.B	#0xc0, &(cmd+1)
+
+	CLR		R12
+	MOV.B	(cmd+2), R12
+	AND		#0x003f, R12
+	ADD.B	(cmd+1), R12
+	MOV.B	R12,        &(rfidBuf+1)
+	;ADD		R_scratch0, R12
+	;MOV		R12,		&(rfidBuf)
+	MOV.W	(rfidBuf), R12
+	SWPB	R12
+	PUSH	R12
 	;Setup TxFM0
 	;TRANSMIT (16pre,38tillTxinTxFM0 -> 54cycles)
 	MOV		#(rfidBuf),		R12		;[2] load the &rfidBuf[0]
@@ -270,8 +305,17 @@ queryTimingLoop:
 	MOV		#(0),			R14		;[1] load numBits=0
 	MOV.B	rfid.TRext,		R15		;[3] load TRext
 	CALLA	#TxFM0					;[5] call the routine
+	POP		R12
+	; QUERY callback
+	INC		&(0x1806)
 
 
+
+	CMP.B		#(0), &(RWData.quHook);[]
+	JEQ			doneQuery	;[]
+	MOV			&(RWData.quHook), R_scratch0 ;[]
+
+	CALLA		R_scratch0			;[] Can mangle R12-R15
 	;Restore faster Rx Clock
 	;MOV		&(INFO_ADDR_RXUCS0), &UCSCTL0 ;[] switch to corr Rx Frequency
 	;MOV		&(INFO_ADDR_RXUCS1), &UCSCTL1 ;[] ""

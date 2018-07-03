@@ -140,6 +140,7 @@ keepDoingRFID:
 ;/	every command except for select will be skipped if !rfid.isSelected																 *
 ;/***********************************************************************************************************************************/
 decodeCmd_lvl1:
+	INC		&(0x1800)
 	MOV.B 	(cmd),  R_scratch0	;[] bring in cmd[0] to parse
 	AND.B	#0xC0,  R_scratch0	;[] just compare the first two bits
 
@@ -208,7 +209,7 @@ callSelectHandler:
 	JMP		endDoRFID
 
 callQueryHandler:
-	;INC		&(0x1806)		;for checking how many query has been called
+    INC		&(0x1802)
 	CALLA	#handleQuery
 	JMP		endDoRFID
 

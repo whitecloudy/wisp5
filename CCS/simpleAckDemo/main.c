@@ -10,7 +10,20 @@
 #include "wisp-base.h"
 
 WISP_dataStructInterface_t wispData;
+uint16_t *timetable_start_adx = (uint16_t*)0x180d;
+uint16_t counter;
 
+void my_queryCallback(uint16_t ts) {
+	if(ts == 0x0000)
+		return;
+	ts = ts & 0x7fff;
+	counter = FRAM_read_int(timetable_start_adx);
+	counter++;
+	if(counter >= 360)
+		return;
+	FRAM_write(timetable_start_adx, counter);
+	FRAM_write(timetable_start_adx + counter, ts);
+}
 /** 
  * This function is called by WISP FW after a successful ACK reply
  *
@@ -58,6 +71,7 @@ void main(void) {
   WISP_init();
 
   // Register callback functions with WISP comm routines
+  WISP_registerCallback_QUERY(&my_queryCallback);
   WISP_registerCallback_ACK(&my_ackCallback);
   WISP_registerCallback_READ(&my_readCallback);
   WISP_registerCallback_WRITE(&my_writeCallback);

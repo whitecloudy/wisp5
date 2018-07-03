@@ -20,6 +20,10 @@ void WISP_getDataBuffers(WISP_dataStructInterface_t* clientStruct) {
 	clientStruct->readBufPtr=&usrBank[0];
 }
 
+
+void WISP_registerCallback_QUERY(void(*fnPtr)(uint16_t)){
+	RWData.quHook = ((void*)(fnPtr));
+}
 /**
  *  Registers a callback for ACK event
  */

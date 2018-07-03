@@ -58,7 +58,7 @@ Timer0A0_ISR:                                                ;[6]
 ModeA_process:
 	CMP     #RTCAL_MIN, R_newCt                              ;[2] RTCAL >= 2.5*TARI - PW?
 	JL      failed_RTCal                                     ;[2] RTCAL  too small
-	CMP     #RTCAL_MAX, R_newCt                              ;[2] RTCAL <= 3*TARI - PW?
+	CMP     #1300, R_newCt                              ;[2] RTCAL <= 3*TARI - PW?
 	JGE     failed_RTCal                                     ;[2] RTCAL too large
 	
 	;RTCAL is correct length, now proceed to compute pivot.
@@ -152,7 +152,6 @@ ModeD_setupNewByte:
 ;*************************************************************************************************************************************
 failed_RTCal:
 failed_TRCal:
-	;INC 	&(0x1804)			;for checking how many fails
    	CLR		&TA0CTL				;[] Disable TimerA before exiting the ISR after a fail observed to allow going to lpm4.
 	CLR     R_bits                                           ;[1] reset R5 for rentry into RX State Machine
 	CLR     R_bitCt                                          ;[]

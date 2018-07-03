@@ -55,12 +55,12 @@ RX_ISR:
 	BIT.B	#PIN_RX,	&PRXIN		;[4]
 	JNZ		badDelim				;[2]
 
-;	BIT.B	#PIN_RX,	&PRXIN		;[4]
-;	JNZ		badDelim				;[2]
-;	BIT.B	#PIN_RX,	&PRXIN		;[4]
-;	JNZ		badDelim				;[2]
-;	BIT.B	#PIN_RX,	&PRXIN		;[4]
-;	JNZ		badDelim				;[2]
+	;BIT.B	#PIN_RX,	&PRXIN		;[4]
+	;JNZ		badDelim				;[2]
+	;BIT.B	#PIN_RX,	&PRXIN		;[4]
+	;JNZ		badDelim				;[2]
+	;BIT.B	#PIN_RX,	&PRXIN		;[4]
+	;JNZ		badDelim				;[2]
 
 ;	BIT.B	#PIN_RX,	&PRXIN		;[4]
 ;	JNZ		badDelim				;[2]
@@ -127,6 +127,7 @@ RX_ISR:
 
 ; Delim is too short so go back to sleep.
 badDelim:
+    INC     &(0x1808)
 ;	XOR.B   #PIN_AUX3,	&PIN_AUX3_OUT
 	BIC.W	#(CCIE),&TA0CCTL0		; Disable timer interrupt to avoid entering lpm1 instead of lpm4.
 	CLR		&TA0CTL					;[] Disable TimerA since we should again look for the next delim and stay in lpm4
