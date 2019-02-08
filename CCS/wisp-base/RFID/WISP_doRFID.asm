@@ -59,6 +59,8 @@ WISP_doRFID:
 	MOV.B	R12,	&(dataBuf+(DATABUFF_SIZE-2))	;[4] store upper CRC byte
 
 
+
+
 	;Initial Config of RFID Transaction
 	MOV.B	#FALSE, &(rfid.abortFlag);[] Initialize abort flag
 	;BIS.B	#(PIN_RX_EN), &PRXEOUT	;[] enable the receive comparator for a new round
@@ -208,7 +210,6 @@ callSelectHandler:
 	JMP		endDoRFID
 
 callQueryHandler:
-	;INC		&(0x1806)		;for checking how many query has been called
 	CALLA	#handleQuery
 	JMP		endDoRFID
 
