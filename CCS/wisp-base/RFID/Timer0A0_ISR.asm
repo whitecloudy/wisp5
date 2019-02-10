@@ -64,7 +64,7 @@ ModeA_process:
 	;RTCAL is correct length, now proceed to compute pivot.
 	MOV     R_newCt, R_scratch2                              ;[1] Save RTCAL to compare with TRCAL later on.
 	RRA     R_newCt                                          ;[1] pivot = RTCAL/2
-	MOV     #(0), R_pivot                                   ;[1] Preload pivot value with MAX (i.e. 0xFFFFh)
+	MOV     #(-1), R_pivot                                   ;[1] Preload pivot value with MAX (i.e. 0xFFFFh)
 	SUB     R_newCt, R_pivot                                 ;[1] Make pivot negative (so we can use ADD later on).d
 	INC     R_bits                                           ;[1] RTCAL done, proceed to read TRCAL and/or 1st data bit.
 	RETI                                                     ;[5] Return

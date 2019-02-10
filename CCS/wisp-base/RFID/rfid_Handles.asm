@@ -48,18 +48,24 @@ handleQR:
 	CLR		&TA0CTL					;[] todo: maybe come back and remove this line.
 
 	;Decrement the slotcounter if it is >1. this is a safety to prevent underflow.
-	CMP		#(1),	&rfid.slotCount	;[]
-	JL		QRTimeToBackscatter		;[]
+	CMP		#(0),	&rfid.slotCount	;[]
+	JEQ		QRTimeToBackscatter		;[]
 
 QRJustDecrementAndLeave:
 	;else just decrement and exit
-	DEC		&(rfid.slotCount)		;[]
+	;DEC		&(rfid.slotCount)		;[]
+	;(DEBUG) if we are here that means the tag have read Query while it is alive
+	INC		&(0x1808)		;(DEBUG) record how many times does the tag meets QR after read Query
+
 	RETA								;[]
 
 ;we found slot count as 0 or 1, so it's our turn!
 QRTimeToBackscatter:
 
 	MOV		#(0),	&(rfid.slotCount) ;[]as a safety leave slot count in predicted state. prolly don't need this, no one ever uses slot count afterwards anyways....
+
+	INC		&(0x180A)		;(DEBUG) record how many times does the tag meets QR before read Query
+	RETA
 
 	;Delay is a bit tricky because of stupid Q. Q adds 8*Q cycles to the timing. So we need to subtract that (grr...)
 	;TX_TIMING_QR in 640kHz code delayed only 29.0625us.
@@ -174,6 +180,7 @@ handleQuery:
 	;STEP2: Wakeup and Parse--------------------------------------------------------------------------------------------------------//
 	BIC		#(GIE), SR				;[1] don't need anymore bits, so turn off Rx_SM
 	NOP
+
 	;BIC.B   #(PIN_RX_EN), &PRXEOUT    ;@us_change
 	;BIC.B   #PIN_RX_EN, &PDIR_RX_EN	  ;@us_change
 	
@@ -184,6 +191,18 @@ handleQuery:
 
 	CLR		&TA0CTL
 
+	;(DEBUG) check CRC5
+	MOV.B	(cmd+2), R_scratch1		;[3]
+	NOP
+	NOP
+	AND.B	#0x1F, R_scratch1
+	CMP.B	#0x1D, R_scratch1
+	JNE		failQuery
+
+	INC		&(0x180C)		;(DEBUG) record how many heard correct Query
+
+
+
 	;Parse TRext as cmd[0].b0
 	MOV.B	(cmd),	R_scratch0		;[3] parse TRext
 	AND.B	#0x01,	R_scratch0		;[1] it is cmd[0].b0
@@ -191,7 +210,7 @@ handleQuery:
 
 	;Parse Q as cmd[1].b2-b0 | cmd[2].b7
 	MOV.B	(cmd+1), R_scratch0		;[3] prep to parse Q (in cmd[1]/cmd[2])
-	MOV.B	(cmd+2), R_scratch1		;[3]
+
 
 	RRA		R_scratch1				;[1]
 	RLC		R_scratch0				;[1]
@@ -223,7 +242,7 @@ handleQuery:
 	;Mask Slot Count to only contain (Q) bits (i.e. slotCount<2^Q)
 keepShifting:
 	CMP.B	#1,		R_scratch1		;[1] is Qctr>=1? Info stored in C: ( C = (R_s1>=1) )
-	JNC		doneShifting			;[2] break when Qctr is 0.
+	JMP		doneShifting			;[2] break when Qctr is 0.
 
 	DEC		R_scratch1				;[1] Decrement the Qctr
 	SETC							;[1] Load a C bit
@@ -233,11 +252,13 @@ keepShifting:
 doneShifting:
 	;now apply mask to slotCount (and also inc the RN16)
 	AND		R_scratch2, R_scratch0	;[4] apply mask to slotCount (in Rs0)
-	MOV		R_scratch0, &rfid.slotCount	;[] move it out!
-
+	;MOV		R_scratch0, &rfid.slotCount	;[] move it out!
+	MOV		#(255), &rfid.slotCount	;(DEBUG) if 255 is in slotCount that means it did read Query
 	;is it our turn? (recall, slotCount is still in Rs0)
-	CMP #(1), R_scratch0			;[2] is SlotCt>=1? Info stored in C: ( C = (SlotCt>=1) )
-	JNC	rspWithQuery				;[2] respond with a query if !C
+	;CMP #(1), R_scratch0			;[2] is SlotCt>=1? Info stored in C: ( C = (SlotCt>=1) )
+	;(DEBUG) always answer at this point
+
+	JMP	rspWithQuery				;[2] respond with a query if !C
 
 	RETA								;[5] not our turn; return from call
 
@@ -267,7 +288,8 @@ queryTimingLoop:
 	MOV.B	rfid.TRext,		R15		;[3] load TRext
 	CALLA	#TxFM0					;[5] call the routine
 
-
+	NOP
+	JMP		doneQuery
 	;Restore faster Rx Clock
 	;MOV		&(INFO_ADDR_RXUCS0), &UCSCTL0 ;[] switch to corr Rx Frequency
 	;MOV		&(INFO_ADDR_RXUCS1), &UCSCTL1 ;[] ""
@@ -276,6 +298,11 @@ queryTimingLoop:
 ;	MOV.W		#(DCOFSEL0|DCOFSEL1), &CSCTL1;
 ;	MOV.W		#(SELA_0|SELS_3|SELM_3), &CSCTL2;
 ;	MOV.W		#(DIVA_0|DIVS_0|DIVM_0), &CSCTL3;
+
+failQuery:
+	NOP
+	INC		&(0x180E)		;(DEBUG) record how many heard wrong Query
+
 
 doneQuery:
 	RETA											;[5]
@@ -580,7 +607,7 @@ REQRNTimingLoop:
 	MOV		#(0),		R14			;[1] load numBits=0
 	MOV.B	rfid.TRext,	R15			;[3] load TRext
 ;;;;;;;;;;;;;;;;;;;;;;; NO HIT
-	;CALLA	#TxFM0					;[5] call the routine
+	CALLA	#TxFM0					;[5] call the routine
 
 	;Restore faster Rx Clock
 	;MOV		&(INFO_ADDR_RXUCS0), &UCSCTL0 ;[] switch to corr Rx Frequency

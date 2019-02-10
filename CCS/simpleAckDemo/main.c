@@ -76,20 +76,22 @@ void main(void) {
   
   // Set up EPC
   wispData.epcBuf[0] = 0x0B; 		// Tag type
-  wispData.epcBuf[1] = 0;			// Unused data field
-  wispData.epcBuf[2] = 0;			// Unused data field
-  wispData.epcBuf[3] = 0;			// Unused data field
-  wispData.epcBuf[4] = 0;			// Unused data field
-  wispData.epcBuf[5] = 0;			// Unused data field
-  wispData.epcBuf[6] = 0;			// Unused data field
-  wispData.epcBuf[7] = 0x00;		// Unused data field
-  wispData.epcBuf[8] = 0x00;		// Unused data field
-  wispData.epcBuf[9] = 0x51;		// Tag hardware revision (5.1)
-  wispData.epcBuf[10] = *((uint8_t*)INFO_WISP_TAGID+1); // WISP ID MSB: Pull from INFO seg
-  wispData.epcBuf[11] = *((uint8_t*)INFO_WISP_TAGID); // WISP ID LSB: Pull from INFO seg
+  wispData.epcBuf[1] = 1;			// Unused data field
+  wispData.epcBuf[2] = 1;			// Unused data field
+  wispData.epcBuf[3] = 1;			// Unused data field
+  wispData.epcBuf[4] = 1;			// Unused data field
+  wispData.epcBuf[5] = 1;			// Unused data field
+  wispData.epcBuf[6] = 1;			// Unused data field
+  wispData.epcBuf[7] = 1;		// Unused data field
+  wispData.epcBuf[8] = 1;		// Unused data field
+  wispData.epcBuf[9] = 1;		// Tag hardware revision (5.1)
+  wispData.epcBuf[10] = 1; // WISP ID MSB: Pull from INFO seg
+  wispData.epcBuf[11] = 0; // WISP ID LSB: Pull from INFO seg
+
 
   // Talk to the RFID reader.
   while (FOREVER) {
+    wispData.epcBuf[11]++; // WISP ID LSB: Pull from INFO seg
     WISP_doRFID();
   }
 }

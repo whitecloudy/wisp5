@@ -58,8 +58,8 @@ WISP_doRFID:
 	SWPB	R12						;[1] move upper byte into lower byte
 	MOV.B	R12,	&(dataBuf+(DATABUFF_SIZE-2))	;[4] store upper CRC byte
 
-
-
+	INC		&(0x1804)		;(DEBUG) record how many wake up
+	MOV		#(0),	&(rfid.slotCount)	;(DEBUG) clear the slotCount so we can recognize that the tag have read Query before
 
 	;Initial Config of RFID Transaction
 	MOV.B	#FALSE, &(rfid.abortFlag);[] Initialize abort flag
@@ -125,6 +125,7 @@ keepDoingRFID:
     MOV		#QUERY_TIMEOUT_PERIOD, TA1CCR0 ; Timeout period
     MOV		#(TASSEL_1 | MC_1 | TACLR), TA1CTL ; ACLK, upmode, divide by 8, clear TAR
 
+	NOP
 	; @todo Shouldn't we sleep_till_full_power here? Where else could that happen?
 	BIS		#LPM4+GIE, SR			;[] sleep! (LPM4 | GIE)
 	NOP
@@ -145,8 +146,8 @@ decodeCmd_lvl1:
 	MOV.B 	(cmd),  R_scratch0	;[] bring in cmd[0] to parse
 	AND.B	#0xC0,  R_scratch0	;[] just compare the first two bits
 
-	CMP.B	#0xC0,	R_scratch0
-	JEQ		decodeCmd_lvl2_11
+	;CMP.B	#0xC0,	R_scratch0
+	;JEQ		decodeCmd_lvl2_11
 	CMP.B	#0x80,	R_scratch0
 	JEQ		decodeCmd_lvl2_10
 
@@ -158,8 +159,6 @@ decodeCmd_lvl1:
 
 	CMP.B	#0x00, R_scratch0
 	JEQ		callQRHandler
-
-
 
 	JMP		endDoRFID
 
@@ -187,17 +186,17 @@ decodeCmd_lvl2_11:
 decodeCmd_lvl2_10:
 
 	MOV.B 	(cmd), 	R_scratch0	;[] bring in cmd[0] to parse
-	AND.B	#0x30,  R_scratch0	;[] just compare the second two bits
+	AND.B	#0xF0,  R_scratch0	;[] just compare the second two bits
 
-	CMP.B	#0x20,	R_scratch0	;[] is it select?
-	JEQ		callSelectHandler	;[]
+	;CMP.B	#0x20,	R_scratch0	;[] is it select?
+	;JEQ		callSelectHandler	;[]
 
-	CMP.B	#0,		&(rfid.isSelected)
-	JZ		tagNotSelected
+	;CMP.B	#0,		&(rfid.isSelected)
+	;JZ		tagNotSelected
 
-	CMP.B	#0x10,	R_scratch0	;[] is it queryAdjust?
-	JEQ		callQAHandler		;[]
-	CMP.B	#0x00,	R_scratch0	;[] is it query?
+	;CMP.B	#0x90,	R_scratch0	;[] is it queryAdjust?
+	;JEQ		callQAHandler		;[]
+	CMP.B	#0x80,	R_scratch0	;[] is it query?
 	JEQ		callQueryHandler	;[]
 	JMP		endDoRFID			;[] come back and handle after query is working.
 
@@ -206,18 +205,21 @@ decodeCmd_lvl2_10:
 ;/************************************************************************************************************************************/
 
 callSelectHandler:
-	CALLA	#handleSelect
+	;CALLA	#handleSelect
 	JMP		endDoRFID
 
 callQueryHandler:
+	INC		&(0x1806)		;(DEBUG) record how many heard Query&QueryRep
 	CALLA	#handleQuery
 	JMP		endDoRFID
 
 callQRHandler:
+	INC		&(0x1806)		;(DEBUG) record how many heard Query&QueryRep
 	CALLA	#handleQR
 	JMP		endDoRFID
 
 callQAHandler:
+	INC		&(0x1806)		;(DEBUG) record how many heard Query&QueryRep
 	CALLA	#handleQA
 	JMP		endDoRFID
 
@@ -251,7 +253,7 @@ callBlockWriteHandler:
 	BIT.B	#MODE_WRITE, &(rfid.mode)
 	JNC		endDoRFID
 	CALLA	#handleBlockWrite
-	JMP		WISP_doRFID
+	JMP		endDoRFID
 
 
 ;/************************************************************************************************************************************/
@@ -261,12 +263,15 @@ callBlockWriteHandler:
 ;/************************************************************************************************************************************/
 endDoRFID:
 	; Disable timeout timer
-	MOV	#0, TA1CCTL0;
-	MOV #0, TA1CTL;
+	MOV		#0, TA1CCTL0;
+	MOV 	#0, TA1CTL;
 
+	MOV 	#(0), (cmd)
+	MOV 	#(0), (cmd+2)
 	TST.B	(rfid.abortFlag)
 	JZ		keepDoingRFID
 	MOV		#(0), &(TA0CCTL0)
+	DEC		&(0x1804)
 	RETA
 
 tagNotSelected:
