@@ -51,8 +51,8 @@ handleQR:
 	CLR		&TA0CTL					;[] todo: maybe come back and remove this line.
 
 	;Decrement the slotcounter if it is >1. this is a safety to prevent underflow.
-	CMP		#(1),	&rfid.slotCount	;[]
-	JL		QRTimeToBackscatter		;[]
+	CMP		#(0),	rfid.slotCount;[]
+	JEQ		QRTimeToBackscatter		;[]
 
 QRJustDecrementAndLeave:
 	;else just decrement and exit
@@ -241,10 +241,10 @@ doneShifting:
 	MOV		#TRUE,	R_goodToTx
 
 	;is it our turn? (recall, slotCount is still in Rs0)
-	CMP #(1), R_scratch0			;[2] is SlotCt>=1? Info stored in C: ( C = (SlotCt>=1) )
-	JNC	rspWithQuery				;[2] respond with a query if !C
-
-;	RETA								;[5] not our turn; return from call
+	CMP 	#(0), R_scratch0			;[2] is SlotCt==0?
+	JEQ		rspWithQuery				;[2] respond with a query if SlotCount==0
+	DEC		&(rfid.slotCount)
+	RETA								;[5] not our turn; return from call
 
 
 rspWithQuery:
@@ -350,7 +350,6 @@ ackTimingLoop:
 	MOV		#DATABUFF_SIZE,	R13			;[1] load into corr reg (numBytes)
 	MOV		#(0),		R14			;[1] load numBits=0
 	MOV.B	rfid.TRext,	R15			;[3] load TRext
-
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;NO HIT
 
 	CALLA	#TxFM0					;[5] call transmit routine
