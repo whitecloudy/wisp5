@@ -26,7 +26,8 @@ R_bitCt			.set  R6
 R_bits			.set  R5
 R_dest			.set  R4
 
-R_wakeupBits	.set  R10
+
+R_goodToTx		.set  R10
 
 R_scratch0  	.set  R15
 
@@ -59,6 +60,7 @@ WISP_doRFID:
 	MOV.B	R12,	&(dataBuf+(DATABUFF_SIZE-2))	;[4] store upper CRC byte
 
 
+	MOV		#FALSE, R_goodToTx
 
 
 	;Initial Config of RFID Transaction
@@ -214,10 +216,14 @@ callQueryHandler:
 	JMP		endDoRFID
 
 callQRHandler:
+	CMP		#TRUE, R_goodToTx
+	JNE		endDoRFID
 	CALLA	#handleQR
 	JMP		endDoRFID
 
 callQAHandler:
+	CMP		#TRUE, R_goodToTx
+	JNE		endDoRFID
 	CALLA	#handleQA
 	JMP		endDoRFID
 

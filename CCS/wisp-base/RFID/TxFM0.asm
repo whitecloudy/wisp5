@@ -26,6 +26,7 @@ R_prevState .set  R7
 R_scratch0  .set  R8        
 R_scratch1  .set  R9
 R_scratch2  .set  R10
+R_goodToTx	.set  R10				;This will only use after Tx
 
 
 ;/SCRATCH REGISTERS-------------------------------------------------------------------------------------------------------------------
@@ -314,6 +315,8 @@ V1_Send_EoS_Byte:
 
 
     BIC.B	#0x81, &PTXOUT			;[] Clear 2.0 & 2.7 (1.0 is for old 4.1 HW, 2.7 is for current hack...) eventually just 1.0
+
+    MOV		#FALSE, R_goodToTx
     ;* End of 16 free cycles. Also note we only put these here to save 3 friggin cycles which prolly won't make a darn difference...*/
     RETA
 
@@ -529,6 +532,8 @@ V0_Send_EoS_Byte:
 
 
     BIC.B	#0x81, &PTXOUT			;[] Clear 1.0 & 1.7 (1.0 is for old 4.1 HW, 1.7 is for current hack...) eventually just 1.0
+    MOV		#FALSE, R_goodToTx
+
     ;* End of 16 free cycles. Also note we only put these here to save 3 friggin cycles which prolly won't make a darn difference...*/
     RETA
 
@@ -644,6 +649,8 @@ V2_Send_EoS_Byte:
 
 
     BIC.B	#0x81, &PTXOUT			;[] Clear 1.0 & 1.7 (1.0 is for old 4.1 HW, 1.7 is for current hack...) eventually just 1.0
+    MOV		#FALSE, R_goodToTx
+
     ;* End of 16 free cycles. Also note we only put these here to save 3 friggin cycles which prolly won't make a darn difference...*/
     RETA
     

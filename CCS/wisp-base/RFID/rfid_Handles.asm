@@ -23,6 +23,9 @@
 ;/PRESERVED REGISTERS-----------------------------------------------------------------------------------------------------------------
 R_bits		.set	R5
 
+R_goodToTx	.set  	R10
+
+
 R_scratch2	.set	R13
 R_scratch1	.set	R14
 R_scratch0	.set	R15
@@ -62,9 +65,9 @@ QRTimeToBackscatter:
 	MOV		#(0),	&(rfid.slotCount) ;[]as a safety leave slot count in predicted state. prolly don't need this, no one ever uses slot count afterwards anyways....
 
 	;Delay is a bit tricky because of stupid Q. Q adds 8*Q cycles to the timing. So we need to subtract that (grr...)
-	;TX_TIMING_QR in 640kHz code delayed only 29.0625us.
-	;436kHz should delay about 50 + 16.67*2us(at QR we only check 2 bits)
-	;So we need 54.2775us more. And we are using RX clock.
+	;In QueryRep it uses 130 clocks, that means it delays 8.125us and QR decodes only two bits so we need 50us more delay
+	;T1 of 40kHz is 250us, so we need to stay here 291.875 us, and that is 1167.5 loop with Rx clock(16MHz)
+
 	MOV		#TX_TIMING_QR,  R5		;[]
 
 QRTimingLoop:
@@ -235,18 +238,19 @@ doneShifting:
 	AND		R_scratch2, R_scratch0	;[4] apply mask to slotCount (in Rs0)
 	MOV		R_scratch0, &rfid.slotCount	;[] move it out!
 
+	MOV		#TRUE,	R_goodToTx
+
 	;is it our turn? (recall, slotCount is still in Rs0)
 	CMP #(1), R_scratch0			;[2] is SlotCt>=1? Info stored in C: ( C = (SlotCt>=1) )
 	JNC	rspWithQuery				;[2] respond with a query if !C
 
-	RETA								;[5] not our turn; return from call
+;	RETA								;[5] not our turn; return from call
 
 
 rspWithQuery:
 	;Delay is a bit tricky because of stupid Q. Q adds 8*Q cycles to the timing. So we need to subtract that (grr...)
-	;TX_TIMING_QUERY in 640kHz code delayed only 24us.
-	;436kHz should delay about 50us
-	;So we need 26us more. And we are using RX clock.
+	;In Query it uses 142clock, that means it delays 8.875us
+	;T1 of 40kHz is 250us, so we need to stay here 241.125us, and that is 964.5 loop with Rx clock(16MHz)
 	MOV		#TX_TIMING_QUERY,  R5	;[]
 
 queryTimingLoop:
@@ -266,6 +270,7 @@ queryTimingLoop:
 	MOV		#(0),			R14		;[1] load numBits=0
 	MOV.B	rfid.TRext,		R15		;[3] load TRext
 	CALLA	#TxFM0					;[5] call the routine
+
 
 
 	;Restore faster Rx Clock

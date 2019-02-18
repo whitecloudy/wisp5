@@ -54,13 +54,13 @@
 #define TRCAL_MAX                       (4000)           // We don't have time to do a MUL instruction, so we do 3*RTCAL_MAX instead of 3*RTCAL.
 
 //TIMING----------------------------------------------------------------------------------------------------------------------------//
-#define TX_TIMING_QUERY (128)//50us
-#define TX_TIMING_ACK   (135)//50us
+#define TX_TIMING_QUERY (965)//241.125us
+#define TX_TIMING_ACK   (135)//250us
 
-#define TX_TIMING_QR    (269)//83.34us
+#define TX_TIMING_QR    (1168)//291.875us
 #define TX_TIMING_QA    (188)//50us
 
-//These timing values do not match with 436kHz at this moment.
+//These timing values do not match with 40kHz at this moment.
 #define TX_TIMING_REQRN (33)//60.4us
 #define TX_TIMING_READ  (29)//58.0us
 #define TX_TIMING_WRITE (31)//60.4us
