@@ -65,8 +65,8 @@ QRTimeToBackscatter:
 	MOV		#(0),	&(rfid.slotCount) ;[]as a safety leave slot count in predicted state. prolly don't need this, no one ever uses slot count afterwards anyways....
 
 	;Delay is a bit tricky because of stupid Q. Q adds 8*Q cycles to the timing. So we need to subtract that (grr...)
-	;In QueryRep it uses 130 clocks, that means it delays 8.125us and QR decodes only two bits so we need 50us more delay
-	;T1 of 40kHz is 250us, so we need to stay here 291.875 us, and that is 1167.5 loop with Rx clock(16MHz)
+	;In QueryRep it uses 65.6us(observed value) and QR decodes only two bits so we need 50us more delay
+	;T1 of 40kHz is 250us, so we need to stay here 234.4 us, and that is 1167.5 loop with Rx clock(16MHz)
 
 	MOV		#TX_TIMING_QR,  R5		;[]
 
@@ -249,8 +249,8 @@ doneShifting:
 
 rspWithQuery:
 	;Delay is a bit tricky because of stupid Q. Q adds 8*Q cycles to the timing. So we need to subtract that (grr...)
-	;In Query it uses 142clock, that means it delays 8.875us
-	;T1 of 40kHz is 250us, so we need to stay here 241.125us, and that is 964.5 loop with Rx clock(16MHz)
+	;In QueryRep it uses 58.875us(observed value)
+	;T1 of 40kHz is 250us, so we need to stay here 191.125 us, and that is 764.5 loop with Rx clock(16MHz)
 	MOV		#TX_TIMING_QUERY,  R5	;[]
 
 queryTimingLoop:
@@ -333,9 +333,8 @@ ackWaits:
 	;;;;;;;;;;;;;;
 	;keepDoingHandleACK if it is passed RN16	check
 keepDoHandleACK:	
-	;TX_TIMING_ACK in 640kHz code delayed only 14us.
-	;436kHz should delay about 50us
-	;So we need 36us more. And we are using RX clock.
+	;In Ack it uses 55.8125us(observed value)
+	;T1 of 40kHz is 250us, so we need to stay here 194.1875 us, and that is 621.4 loop with Rx clock(16MHz)
 	MOV		#TX_TIMING_ACK, R5		;[2]
 
 ackTimingLoop:
@@ -454,15 +453,15 @@ QAdoneShifting:
 	MOV		R_scratch0, &rfid.slotCount 
 	
 	;is it our turn?
-	CMP #(1), R_scratch0			;[2] is SlotCt>=1? Info stored in C: ( C = (SlotCt>=1) )
-	JNC		rspWithQueryAdj			;[2] respond with a query if !C
+	CMP 	#(0), R_scratch0			;[2] is SlotCt==0?
+	JEQ		rspWithQuery				;[2] respond with a query if SlotCount==0
+	DEC		&(rfid.slotCount)
 	RETA								;[5] not our turn; return from call
 
 rspWithQueryAdj:
 	;Delay is a bit tricky because of stupid Q. Q adds 8*Q cycles to the timing. So we need to subtract that (grr...)
-	;TX_TIMING_QA in 640kHz code delayed only 15us.
-	;436kHz should delay about 50us
-	;So we need 35us more. And we are using RX clock.
+	;WARNING!!!!
+	;This is not adjusted yet!
 	MOV		#TX_TIMING_QA,  R5		;[]
 
 QATimingLoop:
