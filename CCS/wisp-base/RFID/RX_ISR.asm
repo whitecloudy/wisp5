@@ -139,6 +139,7 @@ badDelim:
 
 ; We found a delim ~12.5 us, now turn off PORT1 and prepare Timer0A0.
 goodDelim:                                              ;[24]
+	;INC 	&(0x1804)			;for checking how many fails
 	BIS.B   #PIN_RX, &PRXSEL0                           ;[5] Enable Timer0A0
 	BIC.B   #PIN_RX, &PRXSEL1                           ;[5] Enable Timer0A0
 	CLR.B   &PRXIE                                      ;[4] Disable the Port 1 Interrupt

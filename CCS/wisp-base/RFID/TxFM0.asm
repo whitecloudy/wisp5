@@ -26,7 +26,6 @@ R_prevState .set  R7
 R_scratch0  .set  R8        
 R_scratch1  .set  R9
 R_scratch2  .set  R10
-R_goodToTx	.set  R10				;This will only use after Tx
 
 
 ;/SCRATCH REGISTERS-------------------------------------------------------------------------------------------------------------------
@@ -51,7 +50,7 @@ TxFM0:
 
     ;/Push the Preserved Registers----------------------------------------------------------------------------------------------------
 	PUSHM.A #5, R10					;[?] Push all preserved registers onto stack R6-R10/** @todo Find out how long this takes */
-
+	;INC			&(0x1804)
 	;PUSH    R_currByte				;[3] Note: Could optimize these two lines down into the preamble if necessary
 	;PUSH    R_prevState				;[3] ""
 	;PUSH    R_scratch0				;[3]
@@ -191,7 +190,7 @@ V1_Send_Preamble:
 ;/              b0 spot, so careful with byte or word operations if you change the code.                                             *
 ;/************************************************************************************************************************************
 V1_Load_Data:
-    MOV.B     @R_dataPtr+, R_currByte ;[2] load current byte of data
+    MOV.B     #(0xAA), R_currByte;@R_dataPtr+, R_currByte ;[2] load current byte of data
 
 V1_Send_a_Byte:
     ;/(b0)First Bit [FM0 Calculations are only commented for bit0]--------------------------------------------------------------------
@@ -316,8 +315,9 @@ V1_Send_EoS_Byte:
 
     BIC.B	#0x81, &PTXOUT			;[] Clear 2.0 & 2.7 (1.0 is for old 4.1 HW, 2.7 is for current hack...) eventually just 1.0
 
-    MOV		#FALSE, R_goodToTx
     ;* End of 16 free cycles. Also note we only put these here to save 3 friggin cycles which prolly won't make a darn difference...*/
+    CALLA 	#RxClock	;Switch to Rx Clock
+
     RETA
 
 ; trampoline to avoid a very long jump to V2_Send_Pilot_Tones
@@ -532,9 +532,10 @@ V0_Send_EoS_Byte:
 
 
     BIC.B	#0x81, &PTXOUT			;[] Clear 1.0 & 1.7 (1.0 is for old 4.1 HW, 1.7 is for current hack...) eventually just 1.0
-    MOV		#FALSE, R_goodToTx
 
     ;* End of 16 free cycles. Also note we only put these here to save 3 friggin cycles which prolly won't make a darn difference...*/
+    CALLA 	#RxClock	;Switch to Rx Clock
+
     RETA
 
 
@@ -649,9 +650,10 @@ V2_Send_EoS_Byte:
 
 
     BIC.B	#0x81, &PTXOUT			;[] Clear 1.0 & 1.7 (1.0 is for old 4.1 HW, 1.7 is for current hack...) eventually just 1.0
-    MOV		#FALSE, R_goodToTx
 
     ;* End of 16 free cycles. Also note we only put these here to save 3 friggin cycles which prolly won't make a darn difference...*/
+    CALLA 	#RxClock	;Switch to Rx Clock
+
     RETA
     
     .end ;* End of ASM */

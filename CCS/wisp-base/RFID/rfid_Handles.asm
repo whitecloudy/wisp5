@@ -23,7 +23,7 @@
 ;/PRESERVED REGISTERS-----------------------------------------------------------------------------------------------------------------
 R_bits		.set	R5
 
-R_goodToTx	.set  	R10
+;R_goodToTx	.set  	R10
 
 
 R_scratch2	.set	R13
@@ -37,6 +37,7 @@ R_scratch0	.set	R15
 ; all we backscatter is our RN16.
 ;//***********************************************************************************************************************************
 handleQR:
+	;INC 	&(0x1804)			;[DEBUG] for checking how many QR
 
 	;Don't need to wait for bits, RX_SM already woke us up.
 	BIC		#(GIE),	SR				;[] clear the GIE bit just as a safety. RX_SM already cleared it for us.
@@ -50,13 +51,14 @@ handleQR:
 
 	CLR		&TA0CTL					;[] todo: maybe come back and remove this line.
 
+	DEC		&(rfid.slotCount)		;[]
+
 	;Decrement the slotcounter if it is >1. this is a safety to prevent underflow.
 	CMP		#(0),	rfid.slotCount;[]
 	JEQ		QRTimeToBackscatter		;[]
 
 QRJustDecrementAndLeave:
 	;else just decrement and exit
-	DEC		&(rfid.slotCount)		;[]
 	RETA								;[]
 
 ;we found slot count as 0 or 1, so it's our turn!
@@ -88,11 +90,13 @@ QRTimingLoop:
 	MOV.B	rfid.TRext,	R15			;[3] load TRext
 	CALLA	#TxFM0					;[5] call the routine @us@todo: need to check RN16 in the future, fake TxFM0 in TX
 
+
 	;Restore faster Rx Clock
 	;MOV		&(INFO_ADDR_RXUCS0), &UCSCTL0 ;[] switch to corr Rx Frequency
 	;MOV		&(INFO_ADDR_RXUCS1), &UCSCTL1 ;[] ""
 
-	CALLA #RxClock	;Switch to Rx Clock
+
+;	MOV 	#FALSE,			R_goodToTx	;set R_goodToTx to block any other Query(or QR) command
 
 	RETA
 
@@ -196,11 +200,19 @@ handleQuery:
 	MOV.B	(cmd+1), R_scratch0		;[3] prep to parse Q (in cmd[1]/cmd[2])
 	MOV.B	(cmd+2), R_scratch1		;[3]
 
-	RRA		R_scratch1				;[1]
+	RLA.B		R_scratch1				;[1] 6bits are in cmd+2, most left bit is for Q value. 5 right bits are for CRC
+	RLA.B		R_scratch1				;[1]
+	RLA.B		R_scratch1				;[1]
 	RLC		R_scratch0				;[1]
 	AND		#0x000F, R_scratch0		;[2]
 	MOV.B	R_scratch0, &(rfid.Q)	;[4] store Q
 
+	AND.B	#0xF8, R_scratch1
+	MOV.B	R_scratch1, &(rfid.CRC5)
+
+	CMP.B	#0x10, R_scratch1		;we use fixed CRC right now
+	JNE		queryCRCfailed
+	;INC			&(0x1802)		;[DEBUG] for check good Query
 	;Exit: Q and TRext have been parsed. no registers are held.
 
 	;*********************************************************************************************************************************
@@ -238,12 +250,11 @@ doneShifting:
 	AND		R_scratch2, R_scratch0	;[4] apply mask to slotCount (in Rs0)
 	MOV		R_scratch0, &rfid.slotCount	;[] move it out!
 
-	MOV		#TRUE,	R_goodToTx
+	;MOV		#TRUE,	R_goodToTx		;[] we set R_goodToTx so that we can transmit some data
 
 	;is it our turn? (recall, slotCount is still in Rs0)
-	CMP 	#(0), R_scratch0			;[2] is SlotCt==0?
+	CMP 	#(0), R_scratch0			;[2] is SlotCt==1?
 	JEQ		rspWithQuery				;[2] respond with a query if SlotCount==0
-	DEC		&(rfid.slotCount)
 	RETA								;[5] not our turn; return from call
 
 
@@ -251,6 +262,7 @@ rspWithQuery:
 	;Delay is a bit tricky because of stupid Q. Q adds 8*Q cycles to the timing. So we need to subtract that (grr...)
 	;In QueryRep it uses 58.875us(observed value)
 	;T1 of 40kHz is 250us, so we need to stay here 191.125 us, and that is 764.5 loop with Rx clock(16MHz)
+	DEC		&(rfid.slotCount)			;we decrease slot count here so the tag cannot reply until next query
 	MOV		#TX_TIMING_QUERY,  R5	;[]
 
 queryTimingLoop:
@@ -273,17 +285,18 @@ queryTimingLoop:
 
 
 
-	;Restore faster Rx Clock
-	;MOV		&(INFO_ADDR_RXUCS0), &UCSCTL0 ;[] switch to corr Rx Frequency
-	;MOV		&(INFO_ADDR_RXUCS1), &UCSCTL1 ;[] ""
-
-;	MOV.B		#(0xA5), &CSCTL0_H;[] Switch to corr Rx frequency
-;	MOV.W		#(DCOFSEL0|DCOFSEL1), &CSCTL1;
-;	MOV.W		#(SELA_0|SELS_3|SELM_3), &CSCTL2;
-;	MOV.W		#(DIVA_0|DIVS_0|DIVM_0), &CSCTL3;
+	;MOV 	#FALSE,			R_goodToTx	;set R_goodToTx to block any other Query(or QR) command
 
 doneQuery:
+
 	RETA											;[5]
+
+queryCRCfailed:
+	;INC			&(0x1800)						[DEBUG] for check failed Query
+	MOV			#(-1), &(rfid.slotCount)			;Let the tag not response until tag listen proper query
+
+	RETA
+
 
 
 ;//***********************************************************************************************************************************
@@ -357,8 +370,6 @@ ackTimingLoop:
 	;/** @todo Should we do this now, or at the top of keepDoingRFID? */
 	;MOV		&(INFO_ADDR_RXUCS0), &UCSCTL0 ;[] switch to corr Rx Frequency
 	;MOV		&(INFO_ADDR_RXUCS1), &UCSCTL1 ;[] ""
-
-	CALLA #RxClock	;Switch to RxClock
 
 	;Call user hook function if it's configured (if it's non-NULL)
 	CMP.B		#(0), &(RWData.akHook);[]
@@ -482,6 +493,8 @@ QATimingLoop:
 	MOV.B	rfid.TRext,	R15			;[3] load TRext
 	;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;NO HIT
 	CALLA	#TxFM0					;[5] call the routine
+
+	;MOV 	#FALSE,			R_goodToTx	;set R_goodToTx to block any other Query(or QR) command
 
 	;Restore faster Rx Clock
 	;MOV		&(INFO_ADDR_RXUCS0), &UCSCTL0 ;[] switch to corr Rx Frequency

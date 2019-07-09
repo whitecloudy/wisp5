@@ -48,10 +48,10 @@
 #define RESET_BITS_VAL  (-2)        /* this is the value which will reset the TA1_SM if found in 'bits (R5)' by rfid_sm         */
 
 // RFID TIMINGS (Taken a bit more liberately to support both R420 and R1000).
-#define RTCAL_MIN                       (800)           // strictly calculated it should be 2.5*TARI = 2.5*16.67 us = 41.675 us = 667 cycles
-#define RTCAL_MAX                       (1300)           // 3*TARI = 3*16.67 = 50.01 us = 800 cycles
-#define TRCAL_MIN                       (880)           // We don't have time to do a MUL instruction, so we do 1.1*RTCAL_MIN instead of 1.1*RTCAL.
-#define TRCAL_MAX                       (4000)           // We don't have time to do a MUL instruction, so we do 3*RTCAL_MAX instead of 3*RTCAL.
+#define RTCAL_MIN                       (1034)           // TRcal/3 < RTcal
+#define RTCAL_MAX                       (2996)           // RTcal < TRcal/1.1
+#define TRCAL_MIN                       (3104)           // We use 40kHz BLF. So TRcal is 200us. Specification wants 1% error but in here, we tolerate 3% error
+#define TRCAL_MAX                       (3296)			 //
 
 //TIMING----------------------------------------------------------------------------------------------------------------------------//
 #define TX_TIMING_QUERY (765)//191.255us
@@ -97,6 +97,7 @@ typedef struct {
     uint16_t    handle;                     /** @todo What is this member? */
     uint16_t    slotCount;                  /** @todo What is this member? */
     uint8_t     Q;                          /** @todo What is this member? */
+    uint8_t		CRC5;						/* This is for 5 bits CRC															*/
 
     uint8_t     mode;                       /** @todo What is this member? */
     uint8_t     abortOn;                    /*  List of command responses which cause the main RFID loop to return              */
@@ -112,6 +113,13 @@ typedef struct {
 }RFIDstruct;                                /* in MODE_USES_SEL!!                                                               */
 
 extern RFIDstruct   rfid;
+
+typedef struct {
+	uint16_t	RTcal;
+	uint16_t	TRcal;
+}RFIDdebug;
+
+extern RFIDdebug	debug_st;
 
 //THE RW STRUCT FOR ACCESS STATE VARS
 typedef struct {

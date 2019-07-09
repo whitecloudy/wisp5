@@ -27,7 +27,7 @@ R_bits			.set  R5
 R_dest			.set  R4
 
 
-R_goodToTx		.set  R10
+;R_goodToTx		.set  R10
 
 R_scratch0  	.set  R15
 
@@ -59,13 +59,15 @@ WISP_doRFID:
 	SWPB	R12						;[1] move upper byte into lower byte
 	MOV.B	R12,	&(dataBuf+(DATABUFF_SIZE-2))	;[4] store upper CRC byte
 
-
-	MOV		#FALSE, R_goodToTx
+	MOV		#(-1),	&(rfid.slotCount)
 
 
 	;Initial Config of RFID Transaction
 	MOV.B	#FALSE, &(rfid.abortFlag);[] Initialize abort flag
 	;BIS.B	#(PIN_RX_EN), &PRXEOUT	;[] enable the receive comparator for a new round
+
+	CALLA 	#RxClock	;Switch to Rx Clock
+
 
 keepDoingRFID:
 ;/************************************************************************************************************************************
@@ -76,8 +78,6 @@ keepDoingRFID:
 
 	;MOV		&(INFO_ADDR_RXUCS0), &UCSCTL0 	;[] switch to corr Rx Frequency
 	;MOV		&(INFO_ADDR_RXUCS1), &UCSCTL1	;[] ""
-
-	CALLA #RxClock	;Switch to Rx Clock
 
 ;/************************************************************************************************************************************
 ;/										CONFIG, ENABLE The RX State Machine															 *
@@ -216,13 +216,13 @@ callQueryHandler:
 	JMP		endDoRFID
 
 callQRHandler:
-	CMP		#TRUE, R_goodToTx
+	;CMP		#TRUE, R_goodToTx	;check if it is ok to run
 	JNE		endDoRFID
 	CALLA	#handleQR
 	JMP		endDoRFID
 
 callQAHandler:
-	CMP		#TRUE, R_goodToTx
+	;CMP		#TRUE, R_goodToTx	;check if it is ok to run
 	JNE		endDoRFID
 	CALLA	#handleQA
 	JMP		endDoRFID

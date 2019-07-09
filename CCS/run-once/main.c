@@ -35,7 +35,7 @@ void ledBlinks (uint8_t count, uint16_t duration) {
 	while(count--) {
 		// Stay on for ~1ms, then wait for specified duration
 		BITSET(PLED1OUT,PIN_LED1);
-		Timer_LooseDelay(32);
+		Timer_LooseDelay(3200);
 		BITCLR(PLED1OUT,PIN_LED1);
 		Timer_LooseDelay(duration);
 	}
