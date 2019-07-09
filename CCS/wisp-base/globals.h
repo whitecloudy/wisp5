@@ -112,14 +112,6 @@ typedef struct {
 
 }RFIDstruct;                                /* in MODE_USES_SEL!!                                                               */
 
-extern RFIDstruct   rfid;
-
-typedef struct {
-	uint16_t	RTcal;
-	uint16_t	TRcal;
-}RFIDdebug;
-
-extern RFIDdebug	debug_st;
 
 //THE RW STRUCT FOR ACCESS STATE VARS
 typedef struct {
