@@ -112,6 +112,7 @@ typedef struct {
 
 }RFIDstruct;                                /* in MODE_USES_SEL!!                                                               */
 
+extern RFIDstruct rfid;
 
 //THE RW STRUCT FOR ACCESS STATE VARS
 typedef struct {

@@ -50,7 +50,6 @@ TxFM0:
 
     ;/Push the Preserved Registers----------------------------------------------------------------------------------------------------
 	PUSHM.A #5, R10					;[?] Push all preserved registers onto stack R6-R10/** @todo Find out how long this takes */
-	;INC			&(0x1804)
 	;PUSH    R_currByte				;[3] Note: Could optimize these two lines down into the preamble if necessary
 	;PUSH    R_prevState				;[3] ""
 	;PUSH    R_scratch0				;[3]
@@ -190,7 +189,7 @@ V1_Send_Preamble:
 ;/              b0 spot, so careful with byte or word operations if you change the code.                                             *
 ;/************************************************************************************************************************************
 V1_Load_Data:
-    MOV.B     #(0xAA), R_currByte;@R_dataPtr+, R_currByte ;[2] load current byte of data
+    MOV.B     @R_dataPtr+, R_currByte ;[2] load current byte of data
 
 V1_Send_a_Byte:
     ;/(b0)First Bit [FM0 Calculations are only commented for bit0]--------------------------------------------------------------------

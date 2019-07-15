@@ -93,9 +93,13 @@ ModeB_dataBit:
 	RETI                                                     ;[5] Return
 
 ModeB_TRCal:
-	CMP     #TRCAL_MIN, R_newCt                              ;[2] TRCAL >= 1.1*RTCAL_ESTIMATE?
+	;CMP     #TRCAL_MIN, R_newCt                              ;[2] TRCAL >= 1.1*RTCAL_ESTIMATE?
+	;JL      failed_TRCal                                     ;[2] TRCAL too small
+	;CMP     #TRCAL_MAX,  R_newCt                             ;[2] TRCAL <= 3 RTCAL_ESTIMATE?
+	;JGE     failed_TRCal                                     ;[2] TRCAL too large
+	CMP     #(3104), R_newCt                              ;[2] TRCAL >= 1.1*RTCAL_ESTIMATE?
 	JL      failed_TRCal                                     ;[2] TRCAL too small
-	CMP     #TRCAL_MAX,  R_newCt                             ;[2] TRCAL <= 3 RTCAL_ESTIMATE?
+	CMP     #(3296),  R_newCt                             ;[2] TRCAL <= 3 RTCAL_ESTIMATE?
 	JGE     failed_TRCal                                     ;[2] TRCAL too large
 	
 	CLR     R_bitCt                                          ;[1] Since we received full preamble, clear current command bit received count.

@@ -50,8 +50,8 @@
 
 // A table of some random 16 bit numbers, so the WISP doesn't need to
 //  generate the whole thing on the fly. 2 bytes each.
-//#define INFO_WISP_RAND_TBL      (INFO_WISP_TAGID + 6)   [DEBUG] for debugging memery space
-#define INFO_WISP_RAND_TBL      (INFO_WISP_TAGID + 2)
+#define INFO_WISP_RAND_TBL      (INFO_WISP_TAGID + 6)   //[DEBUG] for debugging memery space
+//#define INFO_WISP_RAND_TBL      (INFO_WISP_TAGID + 2)
 
 // A checksum.
 // TODO Is it for the entirety of WISP-specific info segments?

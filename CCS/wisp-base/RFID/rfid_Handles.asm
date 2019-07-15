@@ -4,7 +4,7 @@
 ;*
 ;*	@author		Justin Reina, UW Sensor Systems Lab
 ;*	@created	7-15-11
-;*	@last rev	7-25-11
+;*	@last rev	7-10-19
 ;*
 ;*	@notes		x
 ;*
@@ -37,8 +37,6 @@ R_scratch0	.set	R15
 ; all we backscatter is our RN16.
 ;//***********************************************************************************************************************************
 handleQR:
-	;INC 	&(0x1804)			;[DEBUG] for checking how many QR
-
 	;Don't need to wait for bits, RX_SM already woke us up.
 	BIC		#(GIE),	SR				;[] clear the GIE bit just as a safety. RX_SM already cleared it for us.
 	NOP
@@ -70,7 +68,8 @@ QRTimeToBackscatter:
 	;In QueryRep it uses 65.6us(observed value) and QR decodes only two bits so we need 50us more delay
 	;T1 of 40kHz is 250us, so we need to stay here 234.4 us, and that is 1167.5 loop with Rx clock(16MHz)
 
-	MOV		#TX_TIMING_QR,  R5		;[]
+	;MOV		#TX_TIMING_QR,  R5		;[]
+	MOV		#(938),  R5		;[]
 
 QRTimingLoop:
 	NOP								;[1]
@@ -96,7 +95,6 @@ QRTimingLoop:
 	;MOV		&(INFO_ADDR_RXUCS1), &UCSCTL1 ;[] ""
 
 
-;	MOV 	#FALSE,			R_goodToTx	;set R_goodToTx to block any other Query(or QR) command
 
 	RETA
 
@@ -210,9 +208,8 @@ handleQuery:
 	AND.B	#0xF8, R_scratch1
 	MOV.B	R_scratch1, &(rfid.CRC5)
 
-	CMP.B	#0x10, R_scratch1		;we use fixed CRC right now
+	CMP.B	#0x58, R_scratch1		;we use fixed CRC right now
 	JNE		queryCRCfailed
-	;INC			&(0x1802)		;[DEBUG] for check good Query
 	;Exit: Q and TRext have been parsed. no registers are held.
 
 	;*********************************************************************************************************************************
@@ -263,7 +260,8 @@ rspWithQuery:
 	;In QueryRep it uses 58.875us(observed value)
 	;T1 of 40kHz is 250us, so we need to stay here 191.125 us, and that is 764.5 loop with Rx clock(16MHz)
 	DEC		&(rfid.slotCount)			;we decrease slot count here so the tag cannot reply until next query
-	MOV		#TX_TIMING_QUERY,  R5	;[]
+	;MOV		#TX_TIMING_QUERY,  R5	;[]
+	MOV		#(765),  R5	;[]
 
 queryTimingLoop:
 	NOP								;[1]
@@ -292,7 +290,6 @@ doneQuery:
 	RETA											;[5]
 
 queryCRCfailed:
-	;INC			&(0x1800)						[DEBUG] for check failed Query
 	MOV			#(-1), &(rfid.slotCount)			;Let the tag not response until tag listen proper query
 
 	RETA
@@ -348,7 +345,8 @@ ackWaits:
 keepDoHandleACK:	
 	;In Ack it uses 55.8125us(observed value)
 	;T1 of 40kHz is 250us, so we need to stay here 194.1875 us, and that is 621.4 loop with Rx clock(16MHz)
-	MOV		#TX_TIMING_ACK, R5		;[2]
+	;MOV		#TX_TIMING_ACK, R5		;[2]
+	MOV		#(621), R5		;[2]
 
 ackTimingLoop:
 	NOP								;[1]
@@ -466,13 +464,13 @@ QAdoneShifting:
 	;is it our turn?
 	CMP 	#(0), R_scratch0			;[2] is SlotCt==0?
 	JEQ		rspWithQuery				;[2] respond with a query if SlotCount==0
-	DEC		&(rfid.slotCount)
 	RETA								;[5] not our turn; return from call
 
 rspWithQueryAdj:
 	;Delay is a bit tricky because of stupid Q. Q adds 8*Q cycles to the timing. So we need to subtract that (grr...)
 	;WARNING!!!!
 	;This is not adjusted yet!
+	DEC		&(rfid.slotCount)		;we decrease slot count here so the tag cannot reply until next query
 	MOV		#TX_TIMING_QA,  R5		;[]
 
 QATimingLoop:
@@ -495,15 +493,6 @@ QATimingLoop:
 	CALLA	#TxFM0					;[5] call the routine
 
 	;MOV 	#FALSE,			R_goodToTx	;set R_goodToTx to block any other Query(or QR) command
-
-	;Restore faster Rx Clock
-	;MOV		&(INFO_ADDR_RXUCS0), &UCSCTL0 ;[] switch to corr Rx Frequency
-	;MOV		&(INFO_ADDR_RXUCS1), &UCSCTL1 ;[] ""
-
-;	MOV.B		#(0xA5), &CSCTL0_H;[] Switch to corr Rx frequency
-;	MOV.W		#(DCOFSEL0|DCOFSEL1), &CSCTL1;
-;	MOV.W		#(SELA_0|SELS_3|SELM_3), &CSCTL2;
-;	MOV.W		#(DIVA_0|DIVS_0|DIVM_0), &CSCTL3;
 
 	RETA
 
