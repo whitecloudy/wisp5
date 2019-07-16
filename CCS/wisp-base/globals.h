@@ -54,10 +54,10 @@
 #define TRCAL_MAX                       (3296)			 //
 
 //TIMING----------------------------------------------------------------------------------------------------------------------------//
-#define TX_TIMING_QUERY (765)//191.255us
+#define TX_TIMING_QUERY (790)//191.255us
 #define TX_TIMING_ACK   (653)//194.0625us
 
-#define TX_TIMING_QR    (938)//234.5us
+#define TX_TIMING_QR    (1238)//234.5us
 #define TX_TIMING_QA    (188)//50us
 
 //These timing values do not match with 40kHz at this moment.

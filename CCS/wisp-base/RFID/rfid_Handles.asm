@@ -66,8 +66,8 @@ QRTimeToBackscatter:
 	;In QueryRep it uses 65.6us(observed value) and QR decodes only two bits so we need 50us more delay
 	;T1 of 40kHz is 250us, so we need to stay here 234.4 us, and that is 1167.5 loop with Rx clock(16MHz)
 
-	;MOV		#TX_TIMING_QR,  R5		;[]
-	MOV		#(938),  R5		;[]
+	MOV		#TX_TIMING_QR,  R5		;[]
+	;MOV		#(1238),  R5		;[]
 
 QRTimingLoop:
 	NOP								;[1]
@@ -173,6 +173,9 @@ handleQuery:
 
 	JLO		handleQuery				;[2] Loop until C pops up.
 
+
+
+
 	;RETA
 	;STEP2: Wakeup and Parse--------------------------------------------------------------------------------------------------------//
 	BIC		#(GIE), SR				;[1] don't need anymore bits, so turn off Rx_SM
@@ -186,22 +189,6 @@ handleQuery:
 
 
 	CLR		&TA0CTL
-
-	;Parse TRext as cmd[0].b0
-	MOV.B	(cmd),	R_scratch0		;[3] parse TRext
-	AND.B	#0x01,	R_scratch0		;[1] it is cmd[0].b0
-	MOV.B	R_scratch0, &(rfid.TRext);[4] push it out
-
-	;Parse Q as cmd[1].b2-b0 | cmd[2].b7
-	MOV.B	(cmd+1), R_scratch0		;[3] prep to parse Q (in cmd[1]/cmd[2])
-	MOV.B	(cmd+2), R_scratch1		;[3]
-
-	RLA.B	R_scratch1				;[1] 6bits are in cmd+2, most left bit is for Q value. 5 right bits are for CRC
-	RLA.B	R_scratch1				;[1]
-	RLA.B	R_scratch1				;[1]
-	RLC		R_scratch0				;[1]
-	AND		#0x000F, R_scratch0		;[2]
-	MOV.B	R_scratch0, &(rfid.Q)	;[4] store Q
 
 CRC5_check_stage:
 	;AND.B	#0xF8, R_scratch1
@@ -233,6 +220,24 @@ CRC5_notXOR:
 CRC5_confirm:
 	TST		R_scratch0				;if it is correct CRC it should be zero
 	JNZ		queryCRCfailed
+
+	;Parse TRext as cmd[0].b0
+	MOV.B	(cmd),	R_scratch0		;[3] parse TRext
+	AND.B	#0x01,	R_scratch0		;[1] it is cmd[0].b0
+	MOV.B	R_scratch0, &(rfid.TRext);[4] push it out
+
+	;Parse Q as cmd[1].b2-b0 | cmd[2].b7
+	MOV.B	(cmd+1), R_scratch0		;[3] prep to parse Q (in cmd[1]/cmd[2])
+	MOV.B	(cmd+2), R_scratch1		;[3]
+
+	RLA.B	R_scratch1				;[1] 6bits are in cmd+2, most left bit is for Q value. 5 right bits are for CRC
+	RLA.B	R_scratch1				;[1]
+	RLA.B	R_scratch1				;[1]
+	RLC		R_scratch0				;[1]
+	AND		#0x000F, R_scratch0		;[2]
+	MOV.B	R_scratch0, &(rfid.Q)	;[4] store Q
+
+
 
 	;Exit: Q and TRext have been parsed. no registers are held.
 
@@ -282,8 +287,8 @@ rspWithQuery:
 	;In QueryRep it uses 58.875us(observed value)
 	;T1 of 40kHz is 250us, so we need to stay here 191.125 us, and that is 764.5 loop with Rx clock(16MHz)
 	DEC		&(rfid.slotCount)			;we decrease slot count here so the tag cannot reply until next query
-	;MOV		#TX_TIMING_QUERY,  R5	;[]
-	MOV		#(805),  R5	;[]
+	MOV		#TX_TIMING_QUERY,  R5	;[]
+	;MOV		#(790),  R5	;[]
 
 queryTimingLoop:
 	NOP								;[1]
