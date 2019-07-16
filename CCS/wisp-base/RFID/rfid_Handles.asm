@@ -23,8 +23,6 @@
 ;/PRESERVED REGISTERS-----------------------------------------------------------------------------------------------------------------
 R_bits		.set	R5
 
-;R_goodToTx	.set  	R10
-
 
 R_scratch2	.set	R13
 R_scratch1	.set	R14
@@ -198,18 +196,44 @@ handleQuery:
 	MOV.B	(cmd+1), R_scratch0		;[3] prep to parse Q (in cmd[1]/cmd[2])
 	MOV.B	(cmd+2), R_scratch1		;[3]
 
-	RLA.B		R_scratch1				;[1] 6bits are in cmd+2, most left bit is for Q value. 5 right bits are for CRC
-	RLA.B		R_scratch1				;[1]
-	RLA.B		R_scratch1				;[1]
+	RLA.B	R_scratch1				;[1] 6bits are in cmd+2, most left bit is for Q value. 5 right bits are for CRC
+	RLA.B	R_scratch1				;[1]
+	RLA.B	R_scratch1				;[1]
 	RLC		R_scratch0				;[1]
 	AND		#0x000F, R_scratch0		;[2]
 	MOV.B	R_scratch0, &(rfid.Q)	;[4] store Q
 
-	AND.B	#0xF8, R_scratch1
-	MOV.B	R_scratch1, &(rfid.CRC5)
+CRC5_check_stage:
+	;AND.B	#0xF8, R_scratch1
+	;MOV.B	R_scratch1, &(rfid.CRC5)
 
-	CMP.B	#0x58, R_scratch1		;we use fixed CRC right now
-	JNE		queryCRCfailed
+	;CMP.B	#0x10, R_scratch1		;we use fixed CRC right now
+	;JNE		queryCRCfailed
+
+	MOV		(cmd), R_scratch0		;Left 16 bits are in R_scratch0
+	SWPB	R_scratch0
+	MOV.B	(cmd+2), R_scratch1		;Right 6 bits are in R_scratch1
+	RLA.B	R_scratch1				;we need to shift left 2 bit cause left 2 bits are just dummy
+	RLA.B	R_scratch1
+	SETC							;add 1 on the MSB for CRC5 preset
+	RRC		R_scratch0
+	RRC.B	R_scratch1
+	MOV		#(18), R5				;number of bits that has to be processed
+
+CRC5_loop:
+	BIT		#(0x8000), R_scratch0	;test the MSB is 1
+	JZ		CRC5_notXOR				;if it is 0 than we don't need to XOR
+	XOR		#(0xA400), R_scratch0
+CRC5_notXOR:
+	RLA.B	R_scratch1				;shift left 1 bit, and fill with 0
+	RLC		R_scratch0
+	DEC		R5
+	JNZ		CRC5_loop
+
+CRC5_confirm:
+	TST		R_scratch0				;if it is correct CRC it should be zero
+	JNZ		queryCRCfailed
+
 	;Exit: Q and TRext have been parsed. no registers are held.
 
 	;*********************************************************************************************************************************
@@ -247,8 +271,6 @@ doneShifting:
 	AND		R_scratch2, R_scratch0	;[4] apply mask to slotCount (in Rs0)
 	MOV		R_scratch0, &rfid.slotCount	;[] move it out!
 
-	;MOV		#TRUE,	R_goodToTx		;[] we set R_goodToTx so that we can transmit some data
-
 	;is it our turn? (recall, slotCount is still in Rs0)
 	CMP 	#(0), R_scratch0			;[2] is SlotCt==1?
 	JEQ		rspWithQuery				;[2] respond with a query if SlotCount==0
@@ -261,7 +283,7 @@ rspWithQuery:
 	;T1 of 40kHz is 250us, so we need to stay here 191.125 us, and that is 764.5 loop with Rx clock(16MHz)
 	DEC		&(rfid.slotCount)			;we decrease slot count here so the tag cannot reply until next query
 	;MOV		#TX_TIMING_QUERY,  R5	;[]
-	MOV		#(765),  R5	;[]
+	MOV		#(805),  R5	;[]
 
 queryTimingLoop:
 	NOP								;[1]
@@ -283,13 +305,13 @@ queryTimingLoop:
 
 
 
-	;MOV 	#FALSE,			R_goodToTx	;set R_goodToTx to block any other Query(or QR) command
 
 doneQuery:
 
 	RETA											;[5]
 
 queryCRCfailed:
+	INC			&(0x1800)
 	MOV			#(-1), &(rfid.slotCount)			;Let the tag not response until tag listen proper query
 
 	RETA
@@ -346,7 +368,7 @@ keepDoHandleACK:
 	;In Ack it uses 55.8125us(observed value)
 	;T1 of 40kHz is 250us, so we need to stay here 194.1875 us, and that is 621.4 loop with Rx clock(16MHz)
 	;MOV		#TX_TIMING_ACK, R5		;[2]
-	MOV		#(621), R5		;[2]
+	MOV		#(653), R5		;[2]
 
 ackTimingLoop:
 	NOP								;[1]

@@ -55,7 +55,7 @@
 
 //TIMING----------------------------------------------------------------------------------------------------------------------------//
 #define TX_TIMING_QUERY (765)//191.255us
-#define TX_TIMING_ACK   (621)//194.0625us
+#define TX_TIMING_ACK   (653)//194.0625us
 
 #define TX_TIMING_QR    (938)//234.5us
 #define TX_TIMING_QA    (188)//50us
