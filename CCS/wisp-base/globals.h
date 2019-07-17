@@ -70,7 +70,7 @@
 //PROTOCOL DEFS---------------------------------------------------------------------------------------------------------------------//
 //(if # is rounded to 8 that is so  cmd[n] was finished being shifted in)
 #define NUM_SEL_BITS    (48)    /* only need to parse through mask: (4+3+3+2+8+8+16 = 44 -> round to 48)                        */
-#define NUM_QUERY_BITS  (22)
+#define NUM_QUERY_BITS  (104)
 #define NUM_ACK_BITS    (18)
 #define NUM_REQRN_BITS  (40)
 #define NUM_WRITE_BITS  (66)

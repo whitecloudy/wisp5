@@ -190,96 +190,7 @@ handleQuery:
 
 	CLR		&TA0CTL
 
-CRC5_check_stage:
-	;AND.B	#0xF8, R_scratch1
-	;MOV.B	R_scratch1, &(rfid.CRC5)
 
-	;CMP.B	#0x10, R_scratch1		;we use fixed CRC right now
-	;JNE		queryCRCfailed
-
-	MOV		(cmd), R_scratch0		;Left 16 bits are in R_scratch0
-	SWPB	R_scratch0
-	MOV.B	(cmd+2), R_scratch1		;Right 6 bits are in R_scratch1
-	RLA.B	R_scratch1				;we need to shift left 2 bit cause left 2 bits are just dummy
-	RLA.B	R_scratch1
-	SETC							;add 1 on the MSB for CRC5 preset
-	RRC		R_scratch0
-	RRC.B	R_scratch1
-	MOV		#(18), R5				;number of bits that has to be processed
-
-CRC5_loop:
-	BIT		#(0x8000), R_scratch0	;test the MSB is 1
-	JZ		CRC5_notXOR				;if it is 0 than we don't need to XOR
-	XOR		#(0xA400), R_scratch0
-CRC5_notXOR:
-	RLA.B	R_scratch1				;shift left 1 bit, and fill with 0
-	RLC		R_scratch0
-	DEC		R5
-	JNZ		CRC5_loop
-
-CRC5_confirm:
-	TST		R_scratch0				;if it is correct CRC it should be zero
-	JNZ		queryCRCfailed
-
-	;Parse TRext as cmd[0].b0
-	MOV.B	(cmd),	R_scratch0		;[3] parse TRext
-	AND.B	#0x01,	R_scratch0		;[1] it is cmd[0].b0
-	MOV.B	R_scratch0, &(rfid.TRext);[4] push it out
-
-	;Parse Q as cmd[1].b2-b0 | cmd[2].b7
-	MOV.B	(cmd+1), R_scratch0		;[3] prep to parse Q (in cmd[1]/cmd[2])
-	MOV.B	(cmd+2), R_scratch1		;[3]
-
-	RLA.B	R_scratch1				;[1] 6bits are in cmd+2, most left bit is for Q value. 5 right bits are for CRC
-	RLA.B	R_scratch1				;[1]
-	RLA.B	R_scratch1				;[1]
-	RLC		R_scratch0				;[1]
-	AND		#0x000F, R_scratch0		;[2]
-	MOV.B	R_scratch0, &(rfid.Q)	;[4] store Q
-
-
-
-	;Exit: Q and TRext have been parsed. no registers are held.
-
-	;*********************************************************************************************************************************
-	; STEP 2: Generate New Slot Count
-	;	-Random Seed will be prev RN16 with simple operation on it
-	;*********************************************************************************************************************************
-	;Generate psuedo-random #---------------------------------------------------------------------------------------------------------
-	;Grab a Random Value from Random Value Table in InfoB
-	MOV.B	rfid.rn8_ind,	R_scratch0 ;[1] bring in rn8_ind
-	INC		R_scratch0				;[1] rn8_ind++
-	AND		#0x001F, 		R_scratch0 ;[1] modulo 32 on the ind
-	MOV.B	R_scratch0, 	&rfid.rn8_ind ;[4] store new rn8_ind
-
-	;Grab the RN8 (as a 16bit val) and use for RN16 and slotCount
-	ADD		#INFO_WISP_RAND_TBL, R_scratch0 ;[] offset the index into the table
-	MOV		@R_scratch0, 	R_scratch0 ;[] bring in random val (as int, grab some other byte too!)
-	MOV		R_scratch0,		&rfid.handle ;[] store the handle (don't store slotCount just yet!)
-
-	;Generate the Slot Count Mask into R_scratch2
-	CLR		R_scratch2				;[1] load Rs2 with a empty mask
-	MOV.B	(rfid.Q),  		R_scratch1 ;[] bring Q in too
-
-	;Mask Slot Count to only contain (Q) bits (i.e. slotCount<2^Q)
-keepShifting:
-	CMP.B	#1,		R_scratch1		;[1] is Qctr>=1? Info stored in C: ( C = (R_s1>=1) )
-	JNC		doneShifting			;[2] break when Qctr is 0.
-
-	DEC		R_scratch1				;[1] Decrement the Qctr
-	SETC							;[1] Load a C bit
-	RLC		R_scratch2				;[1] insert the 1 bit into mask
-	JMP		keepShifting			;[2] continue shifting
-
-doneShifting:
-	;now apply mask to slotCount (and also inc the RN16)
-	AND		R_scratch2, R_scratch0	;[4] apply mask to slotCount (in Rs0)
-	MOV		R_scratch0, &rfid.slotCount	;[] move it out!
-
-	;is it our turn? (recall, slotCount is still in Rs0)
-	CMP 	#(0), R_scratch0			;[2] is SlotCt==1?
-	JEQ		rspWithQuery				;[2] respond with a query if SlotCount==0
-	RETA								;[5] not our turn; return from call
 
 
 rspWithQuery:
@@ -288,7 +199,7 @@ rspWithQuery:
 	;T1 of 40kHz is 250us, so we need to stay here 191.125 us, and that is 764.5 loop with Rx clock(16MHz)
 	DEC		&(rfid.slotCount)			;we decrease slot count here so the tag cannot reply until next query
 	MOV		#TX_TIMING_QUERY,  R5	;[]
-	;MOV		#(790),  R5	;[]
+
 
 queryTimingLoop:
 	NOP								;[1]
@@ -302,8 +213,8 @@ queryTimingLoop:
 
 	;Setup TxFM0
 	;TRANSMIT (16pre,38tillTxinTxFM0 -> 54cycles)
-	MOV		#(rfidBuf),		R12		;[2] load the &rfidBuf[0]
-	MOV		#(2),			R13		;[1] load into corr reg (numBytes)
+	MOV		#(cmd),			R12		;[2] load the &rfidBuf[0]
+	MOV		#(13),			R13		;[1] load into corr reg (numBytes)
 	MOV		#(0),			R14		;[1] load numBits=0
 	MOV.B	rfid.TRext,		R15		;[3] load TRext
 	CALLA	#TxFM0					;[5] call the routine
