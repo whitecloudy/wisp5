@@ -164,7 +164,8 @@ handleQuery:
 	JNZ 	doneQuery
 
 	;Wait For Enough Bits-----------------------------------------------------------------------------------------------------------//
-	CMP		#NUM_QUERY_BITS, R_bits	;[1] Is R_bits>=22? Info stored in C: ( C = (R_bits>=22) )
+	;CMP		#NUM_QUERY_BITS, R_bits	;[1] Is R_bits>=22? Info stored in C: ( C = (R_bits>=22) )
+	CMP		#128, R_bits	;[1] Is R_bits>=22? Info stored in C: ( C = (R_bits>=22) )
 
 	;;;;;;;;;;;;Debug
 	;BIS.B 	#PIN_LED2, &PDIR_LED2
@@ -190,7 +191,15 @@ handleQuery:
 
 	CLR		&TA0CTL
 
+	MOV.B	&(0x1800),		R12
+	CMP		#(255),			R12
+	JGE		noLog
 
+	INC.B	R12
+	MOV.B	R12,			&(0x1800)
+	;ADD		#(0x1800),		R12
+	MOV.B	(cmd+1),		0x1800(R12)
+noLog:
 
 
 rspWithQuery:
@@ -211,9 +220,10 @@ queryTimingLoop:
 	SWPB	R_scratch0				;[1] swap bytes so we can shove full word out in one call (MSByte into dataBuf[0],...)
 	MOV		R_scratch0, 	&(rfidBuf) ;[4] load the MSByte
 
+
 	;Setup TxFM0
 	;TRANSMIT (16pre,38tillTxinTxFM0 -> 54cycles)
-	MOV		#(cmd),			R12		;[2] load the &rfidBuf[0]
+	MOV		(cmd),			R12		;[2] load the &rfidBuf[0]
 	MOV		#(13),			R13		;[1] load into corr reg (numBytes)
 	MOV		#(0),			R14		;[1] load numBits=0
 	MOV.B	rfid.TRext,		R15		;[3] load TRext
@@ -221,16 +231,9 @@ queryTimingLoop:
 
 
 
-
 doneQuery:
 
 	RETA											;[5]
-
-queryCRCfailed:
-	INC			&(0x1800)
-	MOV			#(-1), &(rfid.slotCount)			;Let the tag not response until tag listen proper query
-
-	RETA
 
 
 
