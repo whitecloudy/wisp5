@@ -215,18 +215,14 @@ queryTimingLoop:
 	DEC		R5						;[1] Info stored in N: N = (R5<0)
 	JNZ		queryTimingLoop			;[2] Break out of loop on N
 
-	;Load up function call, then transmit! bam!
-	MOV		(rfid.handle), 	R_scratch0 ;[3] bring in the RN16
-	SWPB	R_scratch0				;[1] swap bytes so we can shove full word out in one call (MSByte into dataBuf[0],...)
-	MOV		R_scratch0, 	&(rfidBuf) ;[4] load the MSByte
-
 
 	;Setup TxFM0
 	;TRANSMIT (16pre,38tillTxinTxFM0 -> 54cycles)
-	MOV		(cmd),			R12		;[2] load the &rfidBuf[0]
-	MOV		#(13),			R13		;[1] load into corr reg (numBytes)
+	MOV		#(cmd),			R12		;[2] load the &cmd[0]
+	NOP
+	MOV		#(16),			R13		;[1] load into corr reg (numBytes)
 	MOV		#(0),			R14		;[1] load numBits=0
-	MOV.B	rfid.TRext,		R15		;[3] load TRext
+	MOV.B	#(0),			R15		;[3] load TRext
 	CALLA	#TxFM0					;[5] call the routine
 
 
