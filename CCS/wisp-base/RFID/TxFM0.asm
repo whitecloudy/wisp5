@@ -190,7 +190,8 @@ V1_Send_Preamble:
 ;/              b0 spot, so careful with byte or word operations if you change the code.                                             *
 ;/************************************************************************************************************************************
 V1_Load_Data:
-    MOV.B     @R_dataPtr+, R_currByte ;[2] load current byte of data
+    ;MOV.B     @R_dataPtr+, R_currByte ;[2] load current byte of data
+    MOV.B	  #(0xAA), R_currByte
 
 V1_Send_a_Byte:
     ;/(b0)First Bit [FM0 Calculations are only commented for bit0]--------------------------------------------------------------------
