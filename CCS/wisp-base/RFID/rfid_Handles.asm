@@ -165,7 +165,7 @@ handleQuery:
 
 	;Wait For Enough Bits-----------------------------------------------------------------------------------------------------------//
 	;CMP		#NUM_QUERY_BITS, R_bits	;[1] Is R_bits>=22? Info stored in C: ( C = (R_bits>=22) )
-	CMP		#128, R_bits	;[1] Is R_bits>=22? Info stored in C: ( C = (R_bits>=22) )
+	CMP		#136, R_bits	;[1] Is R_bits>=22? Info stored in C: ( C = (R_bits>=22) )
 
 	;;;;;;;;;;;;Debug
 	;BIS.B 	#PIN_LED2, &PDIR_LED2
@@ -191,14 +191,18 @@ handleQuery:
 
 	CLR		&TA0CTL
 
-	MOV.B	&(0x1800),		R12
-	CMP		#(255),			R12
+	MOV		&(0x1800),		R12
+	CMP		#(8192),		R12
 	JGE		noLog
 
-	INC.B	R12
-	MOV.B	R12,			&(0x1800)
-	;ADD		#(0x1800),		R12
-	MOV.B	(cmd+1),		0x1800(R12)
+	MOV		#(0),			R13
+	MOV.B	(cmd+1),		R13
+	SWPB	R13
+	ADD.B	(cmd+2),		R13
+	MOV		R13,			0x11000(R12)
+	INC		R12
+	INC		R12
+	MOV		R12,			&(0x1800)
 noLog:
 
 
@@ -218,7 +222,7 @@ queryTimingLoop:
 
 	;Setup TxFM0
 	;TRANSMIT (16pre,38tillTxinTxFM0 -> 54cycles)
-	MOV		#(cmd),			R12		;[2] load the &cmd[0]
+	MOV		#(cmd+1),		R12		;[2] load the &cmd[0]
 	NOP
 	MOV		#(16),			R13		;[1] load into corr reg (numBytes)
 	MOV		#(0),			R14		;[1] load numBits=0
