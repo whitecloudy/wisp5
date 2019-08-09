@@ -191,6 +191,21 @@ handleQuery:
 
 	CLR		&TA0CTL
 
+	CMP.B	#(0x80),		(cmd)
+	JNE		doneQuery
+
+	MOV		#(cmd+1),		R13
+	MOV		#(16),			R14
+	MOV		#CRC_NO_PRELOAD,R12
+
+	CALLA	#crc16_ccitt
+	;clock consumption=>141
+
+	CMP		#(0xFFFF),		R12
+	JNE		doneQuery
+
+
+	INC		&(0x1804)
 	MOV		&(0x1800),		R12
 	CMP		#(8192),		R12
 	JGE		noLog
@@ -198,7 +213,8 @@ handleQuery:
 	MOV		#(0),			R13
 	MOV.B	(cmd+1),		R13
 	SWPB	R13
-	ADD.B	(cmd+2),		R13
+	MOV.B	(cmd+2),		R14
+	ADD		R14,			R13
 	MOV		R13,			0x11000(R12)
 	INC		R12
 	INC		R12
@@ -228,8 +244,7 @@ queryTimingLoop:
 	MOV		#(0),			R14		;[1] load numBits=0
 	MOV.B	#(0),			R15		;[3] load TRext
 	CALLA	#TxFM0					;[5] call the routine
-
-
+	JMP		doneQuery
 
 doneQuery:
 

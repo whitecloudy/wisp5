@@ -54,7 +54,7 @@
 #define TRCAL_MAX                       (3296)			 //
 
 //TIMING----------------------------------------------------------------------------------------------------------------------------//
-#define TX_TIMING_QUERY (790)//191.255us
+#define TX_TIMING_QUERY (724)//191.255us
 #define TX_TIMING_ACK   (653)//194.0625us
 
 #define TX_TIMING_QR    (1238)//234.5us

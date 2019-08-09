@@ -163,6 +163,7 @@ failed_TRCal:
    	CLR		&TA0CTL				;[] Disable TimerA before exiting the ISR after a fail observed to allow going to lpm4.
 	;CLR     R_bits                                           ;[1] reset R5 for rentry into RX State Machine
 	MOV		#RESET_BITS_VAL, R_bits
+	MOV		# (-2), R_bits
 	CLR     R_bitCt                                          ;[]
 	; TODO The following shouldn't overwrite other bits in PRXSEL!?
 	BIC.B   #PIN_RX, &PRXSEL0                                ;[] disable TimerA1
