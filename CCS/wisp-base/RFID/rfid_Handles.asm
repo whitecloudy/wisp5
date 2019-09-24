@@ -229,6 +229,8 @@ CRC5_confirm:
 
 	MOV		#(0),			R13
 	MOV		(cmd),			R13		;[3] parse TRext
+	SWPB	R13
+	AND		#(8191), 		R13
 	MOV		R13,			0x11000(R12)
 	INC		R12
 	INC		R12
