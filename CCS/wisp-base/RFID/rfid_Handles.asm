@@ -222,15 +222,25 @@ CRC5_confirm:
 	JNZ		queryCRCfailed
 
 	INC		&(0x1804)
-	;Parse TRext as cmd[0].b0
-	MOV		&(0x1800),		R12
-	CMP		#(8192),		R12
-	JGE		noLog
 
+	;Extract round bits
 	MOV		#(0),			R13
 	MOV		(cmd),			R13		;[3] parse TRext
 	SWPB	R13
 	AND		#(8191), 		R13
+
+	;Check that this is our turn
+	MOV		R13,			R14
+	AND		#(0x0001),		R14
+	CMP		R14,			#(0x00)
+	JNE		doneQuery
+
+
+	;Ready for Log
+	MOV		&(0x1800),		R12
+	CMP		#(8192),		R12
+	JGE		noLog
+
 	MOV		R13,			0x11000(R12)
 	INC		R12
 	INC		R12
@@ -251,13 +261,15 @@ queryTimingLoop:
 	JNZ		queryTimingLoop			;[2] Break out of loop on N
 
 	;Load up function call, then transmit! bam!
-	MOV		(rfid.handle), 	R_scratch0 ;[3] bring in the RN16
-	SWPB	R_scratch0				;[1] swap bytes so we can shove full word out in one call (MSByte into dataBuf[0],...)
+	;MOV		(rfid.handle), 	R_scratch0 ;[3] bring in the RN16
+	;SWPB	R_scratch0				;[1] swap bytes so we can shove full word out in one call (MSByte into dataBuf[0],...)
+
+
 	MOV		R_scratch0, 	&(rfidBuf) ;[4] load the MSByte
 
 	;Setup TxFM0
 	;TRANSMIT (16pre,38tillTxinTxFM0 -> 54cycles)
-	MOV		#(rfidBuf),		R12		;[2] load the &rfidBuf[0]
+	MOV		#(0x5555),		R12		;[2] load the &rfidBuf[0]
 	MOV		#(2),			R13		;[1] load into corr reg (numBytes)
 	MOV		#(0),			R14		;[1] load numBits=0
 	MOV.B	#(0),		R15		;[3] load TRext
