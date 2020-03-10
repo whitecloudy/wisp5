@@ -144,8 +144,8 @@ keepDoingRFID:
 ;/	every command except for select will be skipped if !rfid.isSelected																 *
 ;/***********************************************************************************************************************************/
 decodeCmd_lvl1:
-	MOV.B 	(cmd),  R_scratch0	;[] bring in cmd[0] to parse
 	INC		&(0x1802)
+	MOV.B 	(cmd),  R_scratch0	;[] bring in cmd[0] to parse
 	AND.B	#0xC0,  R_scratch0	;[] just compare the first two bits
 
 	CMP.B	#0xC0,	R_scratch0

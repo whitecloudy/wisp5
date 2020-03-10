@@ -227,13 +227,13 @@ CRC5_confirm:
 	MOV		#(0),			R13
 	MOV		(cmd),			R13		;[3] parse TRext
 	SWPB	R13
-	AND		#(8191), 		R13
+	AND		#(0x0FFF), 		R13
 
 	;Check that this is our turn
-	MOV		R13,			R14
-	AND		#(0x0001),		R14
-	CMP		R14,			#(0x00)
-	JNE		doneQuery
+	;MOV		R13,			R14
+	;AND		#(0x0001),		R14
+	;CMP		R14,			#(0x00)
+	;JNE		doneQuery
 
 
 	;Ready for Log
