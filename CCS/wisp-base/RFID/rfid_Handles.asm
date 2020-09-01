@@ -224,10 +224,10 @@ CRC5_confirm:
 	INC		&(0x1804)
 
 	;Extract round bits
-	MOV		#(0),			R13
-	MOV		(cmd),			R13		;[3] parse TRext
-	SWPB	R13
-	AND		#(0x0FFF), 		R13
+	MOV		#(0),			R_scratch0
+	MOV		(cmd),			R_scratch0		;[3] parse TRext
+	SWPB	R_scratch0
+	AND		#(0x0FFF), 		R_scratch0
 
 	;Check that this is our turn
 	;MOV		R13,			R14
@@ -241,7 +241,7 @@ CRC5_confirm:
 	CMP		#(8192),		R12
 	JGE		noLog
 
-	MOV		R13,			0x11000(R12)
+	MOV		R_scratch0,			0x11000(R12)
 	INC		R12
 	INC		R12
 	MOV		R12,			&(0x1800)
@@ -269,7 +269,7 @@ queryTimingLoop:
 
 	;Setup TxFM0
 	;TRANSMIT (16pre,38tillTxinTxFM0 -> 54cycles)
-	MOV		#(0x5555),		R12		;[2] load the &rfidBuf[0]
+	MOV		&(rfidBuf),		R12		;[2] load the &rfidBuf[0]
 	MOV		#(2),			R13		;[1] load into corr reg (numBytes)
 	MOV		#(0),			R14		;[1] load numBits=0
 	MOV.B	#(0),		R15		;[3] load TRext
