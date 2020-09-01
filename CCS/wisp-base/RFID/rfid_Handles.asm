@@ -23,7 +23,7 @@
 ;/PRESERVED REGISTERS-----------------------------------------------------------------------------------------------------------------
 R_bits		.set	R5
 
-
+R_scratch3	.set	R12
 R_scratch2	.set	R13
 R_scratch1	.set	R14
 R_scratch0	.set	R15
@@ -230,15 +230,16 @@ CRC5_confirm:
 	AND		#(0x0FFF), 		R_scratch0
 
 	;Check that this is our turn
-	;MOV		R13,			R14
-	;AND		#(0x0001),		R14
-	;CMP		R14,			#(0x00)
-	;JNE		doneQuery
+	MOV		R_scratch0,		R_scratch1
+	XOR		&(0x1808),		R_scratch1
+	AND		#(0x0003),		R_scratch1
+	CMP		#(0x0000),		R_scratch1
+	JNE		doneQuery
 
 
 	;Ready for Log
-	MOV		&(0x1800),		R12
-	CMP		#(8192),		R12
+	MOV		&(0x1800),		R_scratch3
+	CMP		#(8192),		R_scratch3
 	JGE		noLog
 
 	MOV		R_scratch0,			0x11000(R12)
@@ -269,10 +270,10 @@ queryTimingLoop:
 
 	;Setup TxFM0
 	;TRANSMIT (16pre,38tillTxinTxFM0 -> 54cycles)
-	MOV		&(rfidBuf),		R12		;[2] load the &rfidBuf[0]
+	MOV		#(0x1808),		R12		;[2] load the &rfidBuf[0]
 	MOV		#(2),			R13		;[1] load into corr reg (numBytes)
 	MOV		#(0),			R14		;[1] load numBits=0
-	MOV.B	#(0),		R15		;[3] load TRext
+	MOV.B	#(0),			R15		;[3] load TRext
 	CALLA	#TxFM0					;[5] call the routine
 
 
