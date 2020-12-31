@@ -228,6 +228,7 @@ CRC5_confirm:
 	MOV		(cmd),			R_scratch0		;[3] parse TRext
 	SWPB	R_scratch0
 	AND		#(0x0FFF), 		R_scratch0
+	MOV		&(0x1808),		R_scratch0		;Uncomment this if you want to answer all turn
 
 	;Check that this is our turn
 	MOV		R_scratch0,		R_scratch1

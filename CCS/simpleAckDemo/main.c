@@ -91,9 +91,9 @@ void main(void) {
   // Talk to the RFID reader.
   while (FOREVER) {
 	//keep blinking while it is running
-	BITSET(PLED1OUT,PIN_LED1);
-    WISP_doRFID();
-	BITCLR(PLED1OUT,PIN_LED1);
+	//BITSET(PLED1OUT,PIN_LED1);
+    //WISP_doRFID();
+	//BITCLR(PLED1OUT,PIN_LED1);
 	WISP_doRFID();
   }
 }
