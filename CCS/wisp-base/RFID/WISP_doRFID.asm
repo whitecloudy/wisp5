@@ -145,7 +145,6 @@ keepDoingRFID:
 ;/***********************************************************************************************************************************/
 decodeCmd_lvl1:
 	MOV.B 	(cmd),  R_scratch0	;[] bring in cmd[0] to parse
-	INC		&(0x1802)
 	AND.B	#0xC0,  R_scratch0	;[] just compare the first two bits
 
 	CMP.B	#0xC0,	R_scratch0
