@@ -151,7 +151,9 @@ decodeCmd_lvl1:
 	CMP.B	#0xC0,	R_scratch0
 	JEQ		decodeCmd_lvl2_11
 	CMP.B	#0x80,	R_scratch0
-	JEQ		decodeCmd_lvl2_10
+	;JEQ		decodeCmd_lvl2_10
+	JEQ		callQueryHandler	;jump to Query handler immediately
+	JMP		endDoRFID
 
 	CMP.B	#0,		&(rfid.isSelected)
 	JZ		tagNotSelected
@@ -161,8 +163,6 @@ decodeCmd_lvl1:
 
 	CMP.B	#0x00, R_scratch0
 	JEQ		callQRHandler
-
-
 
 	JMP		endDoRFID
 

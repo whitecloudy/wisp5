@@ -227,15 +227,14 @@ CRC5_confirm:
 	MOV		#(0),			R_scratch0
 	MOV		(cmd),			R_scratch0		;[3] parse TRext
 	SWPB	R_scratch0
-	AND		#(0x0FFF), 		R_scratch0
-	MOV		&(0x1808),		R_scratch0		;Uncomment this if you want to answer all turn
+	AND		#(0x3FFF), 		R_scratch0
 
 	;Check that this is our turn
-	MOV		R_scratch0,		R_scratch1
-	XOR		&(0x1808),		R_scratch1
-	AND		#(0x0003),		R_scratch1
-	CMP		#(0x0000),		R_scratch1
-	JNE		doneQuery
+	;MOV		R_scratch0,		R_scratch1
+	;XOR		&(0x1808),		R_scratch1
+	;AND		#(0x0003),		R_scratch1
+	;CMP		#(0x0000),		R_scratch1
+	;JNE		doneQuery
 
 
 	;Ready for Log
@@ -243,7 +242,7 @@ CRC5_confirm:
 	CMP		#(8192),		R_scratch3
 	JGE		noLog
 
-	MOV		R_scratch0,			0x11000(R12)
+	MOV		R_scratch0,		0x11000(R12)
 	INC		R12
 	INC		R12
 	MOV		R12,			&(0x1800)
